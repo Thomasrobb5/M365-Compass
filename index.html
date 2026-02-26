@@ -1,0 +1,1450 @@
+﻿<!DOCTYPE html>
+<!--
+=============================================================================
+  LicenseGuard - Microsoft 365 License Optimization Portal
+=============================================================================
+
+  AZURE AD APP REGISTRATION SETUP
+  1. Go to portal.azure.com -> Azure Active Directory -> App registrations
+  2. Click "New registration"
+     - Name: LicenseGuard Portal
+     - Supported account types: Single tenant
+     - Redirect URI: Single-page application (SPA) -> http://localhost:5500
+  3. Note Application (client) ID and Directory (tenant) ID
+  4. API permissions -> Add delegated permissions:
+     - User.Read, User.Read.All, Organization.Read.All
+     - Directory.Read.All, AuditLog.Read.All, Reports.Read.All
+  5. Grant admin consent
+
+  RUNNING LOCALLY
+  - VS Code Live Server on port 5500
+  - Or: npx serve . -p 5500
+
+  DEPLOYMENT
+  - Netlify/Vercel: Push folder, set publish dir to "."
+  - Azure Static Web Apps: link GitHub repo, app location & output "."
+  - Update Redirect URI in Azure AD after deployment
+
+=============================================================================
+-->
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>M365 Compass — Microsoft 365 Governance Platform</title>
+    <meta name="description"
+        content="M365 Compass — Microsoft 365 Governance Platform covering Licence Governance and Enterprise Application Governance." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
+                        surface: { 700: '#334155', 800: '#1e293b', 850: '#172033', 900: '#0f172a', 950: '#020617' }
+                    },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-in': 'slideIn 0.3s ease-out', 'pulse-soft': 'pulseSoft 2s ease-in-out infinite' },
+                    keyframes: {
+                        fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+                        slideIn: { from: { opacity: '0', transform: 'translateY(-8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+                        pulseSoft: { '0%,100%': { opacity: '1' }, '50%': { opacity: '.6' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+</head>
+
+<body class="bg-surface-950 text-slate-100 font-sans antialiased transition-colors duration-300">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Config Modal -->
+    <div id="config-modal"
+        class="fixed inset-0 z-[9000] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8">
+            <div class="flex items-center gap-3 mb-6">
+                <img src="/android-chrome-192x192.png" alt="M365 Compass" class="w-10 h-10 rounded-xl object-cover">
+                <div>
+                    <h2 class="text-xl font-bold text-white">Azure AD Configuration</h2>
+                    <p class="text-sm text-slate-400">Connect M365 Compass to your Microsoft 365 tenant</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Tenant ID <span
+                            class="text-red-400">*</span></label>
+                    <input id="cfg-tenant-id" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                        class="input-field w-full" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Client ID <span
+                            class="text-red-400">*</span></label>
+                    <input id="cfg-client-id" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                        class="input-field w-full" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Redirect URI</label>
+                    <input id="cfg-redirect-uri" type="text" placeholder="http://localhost:5500"
+                        class="input-field w-full" />
+                    <p class="text-xs text-slate-500 mt-1">Must match the Redirect URI in Azure AD App Registration</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">App Gov Blob URL (Optional)</label>
+                    <input id="cfg-blob-url" type="url" placeholder="https://storage.blob.core.windows.net/data.json"
+                        class="input-field w-full text-sm" />
+                    <p class="text-xs text-slate-500 mt-1">URL to the pre-compiled backend JSON payload</p>
+                </div>
+                <div class="bg-surface-900 border border-surface-700 rounded-lg p-3">
+                    <p class="text-xs text-slate-400 font-medium mb-2">Required API Permissions (Delegated)</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <span class="permission-badge">User.Read.All</span>
+                        <span class="permission-badge">Directory.Read.All</span>
+                        <span class="permission-badge">AuditLog.Read.All</span>
+                        <span class="permission-badge">Reports.Read.All</span>
+                        <span class="permission-badge">Application.Read.All</span>
+                        <span class="permission-badge">Organization.Read.All</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="cfg-demo-mode" type="checkbox" class="w-4 h-4 accent-brand-500 rounded" />
+                    <label for="cfg-demo-mode" class="text-sm text-slate-300 select-none cursor-pointer">Use Demo Mode
+                        (sample data - no Azure AD required)</label>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button id="cfg-save-btn"
+                    class="flex-1 btn-primary py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> Save &amp; Sign In
+                </button>
+                <button id="cfg-cancel-btn"
+                    class="px-4 py-2.5 rounded-xl text-sm font-semibold btn-secondary hidden">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div id="user-modal"
+        class="fixed inset-0 z-[8000] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden animate-fade-in">
+        <div
+            class="bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between p-6 border-b border-surface-700 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div id="user-modal-avatar"
+                        class="w-12 h-12 rounded-full bg-brand-600 flex items-center justify-center text-white font-bold text-lg">
+                    </div>
+                    <div>
+                        <h3 id="user-modal-name" class="text-lg font-bold text-white"></h3>
+                        <p id="user-modal-upn" class="text-sm text-slate-400"></p>
+                    </div>
+                </div>
+                <button id="user-modal-close"
+                    class="w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center text-slate-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="overflow-y-auto flex-1 p-6 space-y-5" id="user-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- License Rates Modal -->
+    <div id="rates-modal"
+        class="fixed inset-0 z-[8500] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-white">Edit License Rates ($/user/month)</h3>
+                <button id="rates-modal-close"
+                    class="w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center text-slate-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="rates-container" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            <div class="flex gap-3 mt-5">
+                <button id="rates-save-btn" class="flex-1 btn-primary py-2 rounded-xl text-sm font-semibold">Save
+                    Rates</button>
+                <button id="rates-cancel-btn" class="px-4 py-2 rounded-xl text-sm btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SKU Manager Modal -->
+    <div id="sku-manager-modal"
+        class="fixed inset-0 z-[8800] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden">
+        <div class="bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+            <div class="flex items-center justify-between p-6 border-b border-surface-700">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Manage Visible SKUs</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Tick to show, untick to hide from all views</p>
+                </div>
+                <button onclick="closeSkuManager()"
+                    class="w-8 h-8 rounded-lg bg-surface-700 flex items-center justify-center text-slate-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="sku-manager-list" class="overflow-y-auto max-h-96 p-3 space-y-0.5"></div>
+            <div class="flex gap-2 p-4 border-t border-surface-700">
+                <button onclick="resetSkuFilter()" class="btn-secondary text-xs px-3 py-2 rounded-lg flex-1">Auto-detect
+                    secondary</button>
+                <button onclick="showAllSkus()" class="btn-secondary text-xs px-3 py-2 rounded-lg flex-1">Show
+                    all</button>
+                <button onclick="closeSkuManager()" class="btn-primary text-xs px-4 py-2 rounded-lg">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Login / Welcome Screen (shown on first load)                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-login" class="fixed inset-0 flex items-center justify-center bg-surface-950">
+        <div class="text-center max-w-md px-6">
+            <img src="/android-chrome-192x192.png" alt="M365 Compass"
+                class="w-20 h-20 rounded-2xl object-cover mx-auto mb-6 shadow-2xl">
+            <h1 class="text-3xl font-bold text-white mb-1">M365 Compass</h1>
+            <p class="text-slate-400 text-sm mb-8 leading-relaxed">Microsoft 365 Governance Platform — connect to your
+                tenant to get started.</p>
+            <div class="flex flex-col gap-3">
+                <button id="connect-btn"
+                    class="btn-primary py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> Configure &amp; Connect to Microsoft 365
+                </button>
+                <button id="demo-btn"
+                    class="btn-secondary py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="play-circle" class="w-4 h-4"></i> Launch Demo Mode
+                </button>
+            </div>
+            <p class="text-xs text-slate-600 mt-6">Requires Azure AD App Registration with delegated API permissions</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Licence Governance (existing)                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-licence" class="hidden">
+        <!-- App Shell -->
+        <div id="app" class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <aside id="sidebar"
+                class="sidebar w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+                <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800">
+                    <img src="/android-chrome-192x192.png" alt="M365 Compass"
+                        class="w-9 h-9 rounded-lg object-cover shrink-0">
+                    <div>
+                        <span class="text-white font-bold text-base leading-none block">M365 Compass</span>
+                        <span class="text-slate-500 text-xs">Microsoft 365 Governance</span>
+                    </div>
+                </div>
+                <div id="tenant-info" class="px-4 py-3 border-b border-surface-800 hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-soft shrink-0"></div>
+                        <div class="overflow-hidden">
+                            <p id="tenant-name" class="text-xs font-semibold text-slate-300 truncate">Loading...</p>
+                            <p id="signed-in-user" class="text-xs text-slate-500 truncate"></p>
+                        </div>
+                    </div>
+                </div>
+                <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                    <button class="nav-item active" data-page="overview"><i data-lucide="layout-dashboard"
+                            class="w-4 h-4 shrink-0"></i><span>Overview</span></button>
+                    <button class="nav-item" data-page="inventory"><i data-lucide="package"
+                            class="w-4 h-4 shrink-0"></i><span>License Inventory</span></button>
+                    <button class="nav-item" data-page="users"><i data-lucide="users"
+                            class="w-4 h-4 shrink-0"></i><span>All
+                            Users</span></button>
+                    <button class="nav-item" data-page="inactive">
+                        <i data-lucide="user-x" class="w-4 h-4 shrink-0"></i><span>Inactive Users</span>
+                        <span id="inactive-badge"
+                            class="ml-auto bg-amber-500/20 text-amber-400 text-xs px-1.5 py-0.5 rounded-full hidden"></span>
+                    </button>
+                    <button class="nav-item" data-page="devices"><i data-lucide="monitor-smartphone"
+                            class="w-4 h-4 shrink-0"></i><span>Device Insights</span></button>
+                    <button class="nav-item" data-page="analytics"><i data-lucide="bar-chart-2"
+                            class="w-4 h-4 shrink-0"></i><span>Analytics</span></button>
+                    <button class="nav-item" data-page="insights">
+                        <i data-lucide="lightbulb" class="w-4 h-4 shrink-0"></i><span>Optimization</span>
+                        <span id="insights-badge"
+                            class="ml-auto bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full hidden"></span>
+                    </button>
+                    <button class="nav-item" data-page="reports"><i data-lucide="file-bar-chart"
+                            class="w-4 h-4 shrink-0"></i><span>Reports</span></button>
+                </nav>
+                <div class="px-3 pb-4 space-y-2 border-t border-surface-800 pt-3">
+                    <button id="refresh-btn" class="nav-item"><i data-lucide="refresh-cw"
+                            class="w-4 h-4 shrink-0"></i><span>Refresh Data</span></button>
+                    <button onclick="openSkuManager()" class="nav-item">
+                        <i data-lucide="filter" class="w-4 h-4 shrink-0"></i><span>Manage SKUs</span>
+                    </button>
+                    <button id="settings-btn" class="nav-item"><i data-lucide="settings"
+                            class="w-4 h-4 shrink-0"></i><span>Settings</span></button>
+                    <div class="flex items-center justify-between px-3 py-1">
+                        <span class="text-xs text-slate-500">Dark Mode</span>
+                        <button id="theme-toggle" class="w-10 h-5 rounded-full bg-brand-600 relative transition-colors"
+                            aria-label="Toggle theme">
+                            <span
+                                class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                                id="theme-knob"></span>
+                        </button>
+                    </div>
+                    <button id="signout-btn" class="nav-item text-red-400 hover:bg-red-900/20 hidden"><i
+                            data-lucide="log-out" class="w-4 h-4 shrink-0"></i><span>Sign Out</span></button>
+                    <p id="last-refreshed" class="text-xs text-slate-600 px-3 hidden"></p>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <header
+                    class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex items-center gap-4 shrink-0">
+                    <button id="sidebar-toggle"
+                        class="w-8 h-8 rounded-lg bg-surface-800 flex items-center justify-center text-slate-400 hover:text-white transition md:hidden">
+                        <i data-lucide="menu" class="w-4 h-4"></i>
+                    </button>
+                    <div class="flex-1">
+                        <h1 id="page-title" class="text-lg font-bold text-white">Overview</h1>
+                        <p id="page-subtitle" class="text-xs text-slate-400"></p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="backToHub()"
+                            class="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white bg-surface-800 hover:bg-surface-700 border border-surface-700 px-3 py-1.5 rounded-lg transition">
+                            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Hub
+                        </button>
+                        <div
+                            class="flex items-center gap-2 bg-surface-800 rounded-lg px-3 py-1.5 border border-surface-700">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <label class="text-xs text-slate-400">Inactive after</label>
+                            <select id="inactivity-days"
+                                class="bg-transparent text-xs text-white focus:outline-none cursor-pointer">
+                                <option value="14">14 days</option>
+                                <option value="30" selected>30 days</option>
+                                <option value="60">60 days</option>
+                                <option value="90">90 days</option>
+                            </select>
+                        </div>
+                        <div id="data-source-badge"
+                            class="hidden items-center gap-1.5 bg-surface-800 rounded-lg px-3 py-1.5 border border-surface-700">
+                            <span id="data-source-dot" class="w-2 h-2 rounded-full"></span>
+                            <span id="data-source-label" class="text-xs font-medium"></span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Loading -->
+                <div id="loading-overlay" class="flex-1 flex items-center justify-center hidden">
+                    <div class="w-full max-w-sm px-6 text-center">
+                        <img src="/android-chrome-192x192.png" alt="M365 Compass"
+                            class="w-14 h-14 rounded-2xl object-cover mx-auto mb-5 shadow-lg">
+                        <p class="text-white font-semibold text-base mb-1" id="loading-text">Loading Microsoft 365
+                            data...</p>
+                        <p class="text-slate-500 text-xs mb-5" id="loading-sub-text">Please wait</p>
+                        <!-- Progress bar -->
+                        <div class="bg-surface-800 rounded-full h-2 overflow-hidden mb-3">
+                            <div id="loading-progress-bar"
+                                class="h-full bg-gradient-to-r from-brand-500 to-brand-400 rounded-full transition-all duration-500 ease-out"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-slate-500 text-xs" id="loading-progress-pct">0%</p>
+                    </div>
+                </div>
+
+
+                <!-- Login Prompt (moved to top-level #view-login) -->
+
+
+                <!-- Pages Container -->
+                <main id="pages-container" class="flex-1 overflow-y-auto hidden">
+
+                    <!-- Overview -->
+                    <section id="page-overview" class="page-section p-6 space-y-6">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-blue-500/15 text-blue-400"><i data-lucide="package"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="kpi-total-licenses">-</div>
+                                <div class="kpi-label">Total Licenses</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-violet-500/15 text-violet-400"><i data-lucide="users"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="kpi-total-users">-</div>
+                                <div class="kpi-label">Total Users</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-emerald-500/15 text-emerald-400"><i data-lucide="user-check"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="kpi-licensed-users">-</div>
+                                <div class="kpi-label">Licensed Users</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-amber-500/15 text-amber-400"><i data-lucide="user-x"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="kpi-inactive-users">-</div>
+                                <div class="kpi-label">Inactive Licensed</div>
+                            </div>
+                            <div
+                                class="kpi-card col-span-2 lg:col-span-4 xl:col-span-1 border-emerald-800/40 bg-emerald-950/30">
+                                <div class="kpi-icon bg-emerald-500/20 text-emerald-400"><i data-lucide="trending-down"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value text-emerald-400" id="kpi-savings">-</div>
+                                <div class="kpi-label">Est. Monthly Savings</div>
+                                <button id="edit-rates-btn"
+                                    class="text-xs text-emerald-500 hover:text-emerald-300 mt-1 underline">Edit
+                                    rates</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="pie-chart"
+                                            class="w-4 h-4 text-brand-400"></i>
+                                        License Distribution</h3>
+                                </div>
+                                <div class="chart-body flex items-center justify-center"><canvas id="chart-license-dist"
+                                        class="max-h-64"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="bar-chart-3"
+                                            class="w-4 h-4 text-brand-400"></i>
+                                        Under-utilized Licenses</h3>
+                                </div>
+                                <div class="chart-body"><canvas id="chart-underutilized" class="max-h-64"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="activity"
+                                            class="w-4 h-4 text-brand-400"></i>
+                                        Sign-in Activity (30 days)</h3>
+                                </div>
+                                <div class="chart-body"><canvas id="chart-signin-activity" class="max-h-64"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="users" class="w-4 h-4 text-brand-400"></i>
+                                        Active vs Inactive Users</h3>
+                                </div>
+                                <div class="chart-body flex items-center justify-center"><canvas
+                                        id="chart-active-inactive" class="max-h-64"></canvas></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- License Inventory -->
+                    <section id="page-inventory" class="page-section p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header">
+                                <h3 class="section-title"><i data-lucide="package" class="w-4 h-4 text-brand-400"></i>
+                                    License Inventory</h3>
+                                <button id="inv-export-btn" class="btn-secondary btn-sm"><i data-lucide="download"
+                                        class="w-3.5 h-3.5"></i> Export CSV</button>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table" id="inventory-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Friendly Name</th>
+                                            <th>SKU Part Number</th>
+                                            <th class="text-right">Purchased</th>
+                                            <th class="text-right">Assigned</th>
+                                            <th class="text-right">Available</th>
+                                            <th class="text-center">% Utilized</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventory-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- All Users -->
+                    <section id="page-users" class="page-section p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header">
+                                <h3 class="section-title"><i data-lucide="users" class="w-4 h-4 text-brand-400"></i> All
+                                    Users</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="relative"><i data-lucide="search"
+                                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
+                                            id="users-search" type="text" placeholder="Search users..."
+                                            class="input-field pl-9 text-sm w-56" /></div>
+                                    <select id="users-dept-filter" class="input-field text-sm">
+                                        <option value="">All Departments</option>
+                                    </select>
+                                    <button id="users-export-btn" class="btn-secondary btn-sm"><i data-lucide="download"
+                                            class="w-3.5 h-3.5"></i> CSV</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table" id="users-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="sortable" data-sort="displayName">Name</th>
+                                            <th>UPN</th>
+                                            <th class="sortable" data-sort="department">Department</th>
+                                            <th>Licenses</th>
+                                            <th class="sortable" data-sort="daysInactive">Last Sign-in</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-tbody"></tbody>
+                                </table>
+                            </div>
+                            <div id="users-pagination"
+                                class="flex items-center justify-between px-1 pt-4 border-t border-surface-700 mt-4">
+                                <span id="users-count" class="text-xs text-slate-400"></span>
+                                <div class="flex items-center gap-2">
+                                    <button id="users-prev" class="btn-secondary btn-sm">Prev</button>
+                                    <span id="users-page-info" class="text-xs text-slate-400"></span>
+                                    <button id="users-next" class="btn-secondary btn-sm">Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Inactive Users -->
+                    <section id="page-inactive" class="page-section p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header flex-wrap gap-y-2">
+                                <h3 class="section-title"><i data-lucide="user-x" class="w-4 h-4 text-amber-400"></i>
+                                    Inactive Licensed Users</h3>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <!-- Days slider -->
+                                    <div class="flex items-center gap-2 text-sm text-slate-400">
+                                        <i data-lucide="clock" class="w-4 h-4"></i>
+                                        <span>No sign-in for &ge;</span>
+                                        <input id="inactive-slider" type="range" min="7" max="180" value="30" step="1"
+                                            class="accent-amber-400 w-24" />
+                                        <span id="inactive-slider-val" class="text-amber-400 font-bold w-10">30d</span>
+                                    </div>
+                                    <!-- Department filter -->
+                                    <select id="inactive-dept-filter" class="input-field text-sm"
+                                        onchange="renderInactivePage()">
+                                        <option value="">All Departments</option>
+                                    </select>
+                                    <!-- Licence filter -->
+                                    <select id="inactive-lic-filter" class="input-field text-sm"
+                                        onchange="renderInactivePage()">
+                                        <option value="">All Licences</option>
+                                    </select>
+                                    <button id="inactive-export-btn" class="btn-warning btn-sm"><i
+                                            data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>UPN</th>
+                                            <th>Department</th>
+                                            <th>Licenses</th>
+                                            <th class="text-right">Days Inactive</th>
+                                            <th class="text-right">Est. Cost/mo</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inactive-tbody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-surface-700 flex items-center justify-between">
+                                <div class="text-sm text-slate-400">
+                                    <span id="inactive-count" class="font-bold text-amber-400">0</span> users inactive
+                                    &middot;
+                                    <span id="inactive-cost" class="font-bold text-emerald-400">$0</span>/mo potential
+                                    savings
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Device Insights -->
+                    <section id="page-devices" class="page-section p-6 hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="monitor" class="w-4 h-4 text-brand-400"></i>
+                                        Top
+                                        Devices Used</h3>
+                                </div>
+                                <div class="chart-body"><canvas id="chart-devices" class="max-h-64"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="laptop" class="w-4 h-4 text-brand-400"></i>
+                                        OS
+                                        Breakdown</h3>
+                                </div>
+                                <div class="chart-body flex items-center justify-center"><canvas id="chart-os"
+                                        class="max-h-64"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="content-card mt-5">
+                            <div class="content-card-header">
+                                <h3 class="section-title"><i data-lucide="monitor-smartphone"
+                                        class="w-4 h-4 text-brand-400"></i> Premium License Users by Access Type</h3>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>License</th>
+                                            <th class="text-center">Desktop</th>
+                                            <th class="text-center">Mobile</th>
+                                            <th class="text-center">Browser Only</th>
+                                            <th class="text-center">Last Device</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="devices-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Analytics -->
+                    <section id="page-analytics" class="page-section p-6 space-y-6 hidden">
+
+                        <!-- KPIs -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="kpi-card border-red-800/40 bg-red-950/20">
+                                <div class="kpi-icon bg-red-500/15 text-red-400"><i data-lucide="user-minus"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value text-red-400" id="analytics-stale-count">-</div>
+                                <div class="kpi-label">Stale Accounts<br><span class="text-xs text-slate-500">Enabled,
+                                        licensed, never signed in</span></div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-violet-500/15 text-violet-400"><i data-lucide="building-2"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="analytics-dept-count">-</div>
+                                <div class="kpi-label">Departments Tracked</div>
+                            </div>
+                            <div class="kpi-card border-emerald-800/40 bg-emerald-950/20">
+                                <div class="kpi-icon bg-emerald-500/15 text-emerald-400"><i data-lucide="dollar-sign"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value text-emerald-400" id="analytics-total-spend">-</div>
+                                <div class="kpi-label">Total Licence Spend/mo</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts row 1 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="building-2"
+                                            class="w-4 h-4 text-brand-400"></i>
+                                        Licence Spend by Department</h3>
+                                </div>
+                                <div class="chart-body" style="min-height:260px"><canvas id="chart-dept-cost"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="trending-up"
+                                            class="w-4 h-4 text-brand-400"></i>
+                                        Licence Assignment Trend</h3>
+                                    <span class="text-xs text-slate-500">Cached weekly snapshots</span>
+                                </div>
+                                <div class="chart-body" style="min-height:260px"><canvas id="chart-lic-trend"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts row 2 + stale table -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div class="chart-card">
+                                <div class="chart-header">
+                                    <h3 class="chart-title"><i data-lucide="calendar"
+                                            class="w-4 h-4 text-brand-400"></i>
+                                        Sign-in Activity by Day</h3>
+                                    <span class="text-xs text-slate-500">Based on last known sign-in</span>
+                                </div>
+                                <div class="chart-body" style="min-height:220px"><canvas
+                                        id="chart-activity-heatmap"></canvas></div>
+                            </div>
+                            <div class="content-card">
+                                <div class="content-card-header">
+                                    <h3 class="section-title"><i data-lucide="user-minus"
+                                            class="w-4 h-4 text-red-400"></i>
+                                        Stale Accounts</h3>
+                                    <span class="text-xs text-slate-500">Enabled + licensed, never signed in</span>
+                                </div>
+                                <div class="table-wrapper" style="max-height:240px; overflow-y:auto">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>User</th>
+                                                <th>Department</th>
+                                                <th>Licences</th>
+                                                <th class="text-right">Cost</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="stale-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </section>
+
+                    <!-- Optimization Insights -->
+                    <section id="page-insights" class="page-section p-6 hidden">
+                        <div class="flex items-center justify-between mb-5">
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Optimization Recommendations</h3>
+                                <p class="text-sm text-slate-400 mt-0.5">Auto-generated based on current usage patterns
+                                </p>
+                            </div>
+                            <button id="insights-export-btn" class="btn-primary btn-sm"><i data-lucide="file-down"
+                                    class="w-3.5 h-3.5"></i> Export Report</button>
+                        </div>
+                        <div id="insights-container" class="space-y-4"></div>
+                    </section>
+
+                    <!-- Reports -->
+                    <section id="page-reports" class="page-section p-6 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div class="report-card">
+                                <div class="report-icon bg-blue-500/15 text-blue-400"><i data-lucide="users"
+                                        class="w-6 h-6"></i></div>
+                                <h4 class="report-title">Full User License Report</h4>
+                                <p class="report-desc">All users with assigned licenses, last sign-in, and account
+                                    status.
+                                </p><button class="btn-primary btn-sm mt-auto export-report-btn"
+                                    data-report="full-license"><i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    Download
+                                    CSV</button>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-icon bg-amber-500/15 text-amber-400"><i data-lucide="user-x"
+                                        class="w-6 h-6"></i></div>
+                                <h4 class="report-title">Inactive Users Report</h4>
+                                <p class="report-desc">Licensed users who haven't signed in past the configured
+                                    threshold.
+                                </p><button class="btn-warning btn-sm mt-auto export-report-btn"
+                                    data-report="inactive"><i data-lucide="download" class="w-3.5 h-3.5"></i> Download
+                                    CSV</button>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-icon bg-emerald-500/15 text-emerald-400"><i data-lucide="bar-chart-2"
+                                        class="w-6 h-6"></i></div>
+                                <h4 class="report-title">License Utilization Summary</h4>
+                                <p class="report-desc">Per-SKU breakdown of purchased, assigned, available, and
+                                    utilization
+                                    rate.</p><button class="btn-success btn-sm mt-auto export-report-btn"
+                                    data-report="license-util"><i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    Download
+                                    CSV</button>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-icon bg-purple-500/15 text-purple-400"><i data-lucide="lightbulb"
+                                        class="w-6 h-6"></i></div>
+                                <h4 class="report-title">Optimization Insights Report</h4>
+                                <p class="report-desc">Actionable recommendations with estimated cost savings per
+                                    finding.
+                                </p><button class="btn-secondary btn-sm mt-auto export-report-btn"
+                                    data-report="optimization"><i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    Download
+                                    CSV</button>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-icon bg-teal-500/15 text-teal-400"><i
+                                        data-lucide="monitor-smartphone" class="w-6 h-6"></i></div>
+                                <h4 class="report-title">Device &amp; Access Report</h4>
+                                <p class="report-desc">Sign-in method breakdown for premium license holders (E5, Teams
+                                    Premium).</p><button class="btn-secondary btn-sm mt-auto export-report-btn"
+                                    data-report="device"><i data-lucide="download" class="w-3.5 h-3.5"></i> Download
+                                    CSV</button>
+                            </div>
+                        </div>
+                    </section>
+
+                </main>
+            </div>
+        </div><!-- /#app -->
+    </div><!-- /#view-licence -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Hub (Product Launcher)                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-hub" class="hidden fixed inset-0 bg-surface-950 overflow-y-auto z-40">
+
+        <!-- Hub Header -->
+        <header class="border-b border-surface-800 px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="/android-chrome-192x192.png" alt="M365 Compass"
+                    class="w-8 h-8 rounded-lg object-cover shrink-0">
+                <div>
+                    <h1 class="text-sm font-bold text-white leading-none">M365 Compass</h1>
+                    <p class="text-xs text-slate-500 mt-0.5">Microsoft 365 Governance Platform</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="hub-org-name" class="text-sm font-semibold text-slate-200"></p>
+                    <p id="hub-user-info" class="text-xs text-slate-500"></p>
+                </div>
+                <button id="hub-signout-btn"
+                    class="flex items-center gap-2 text-xs text-slate-400 hover:text-red-400 px-3 py-2 rounded-lg hover:bg-red-900/20 transition-colors">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+                </button>
+            </div>
+        </header>
+
+        <!-- Hub Body -->
+        <main class="max-w-5xl mx-auto px-8 py-12">
+
+            <!-- Page heading -->
+            <div class="mb-10">
+                <h2 class="text-xl font-bold text-white">Governance Modules</h2>
+                <p class="text-sm text-slate-500 mt-1">Select a module to begin</p>
+            </div>
+
+            <!-- Big Module Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+
+                <!-- Licence Governance -->
+                <div onclick="launchLicenceGovernance()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-emerald-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-950/40 flex flex-col">
+                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #052e16 0%, #021a0c 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #6ee7b7 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                            style="background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3);">
+                            <i data-lucide="shield-check" class="w-8 h-8 text-emerald-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col gap-3 flex-1">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Licence Governance</h3>
+                            <p class="text-xs text-emerald-400 font-medium mt-0.5">M365 Cost Optimisation</p>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Identify inactive licensed users,
+                            surface unused licences, analyse department spend, and generate actionable cost-saving
+                            recommendations.</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span
+                                class="text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-2 py-0.5 rounded-md">Inactive
+                                Users</span>
+                            <span
+                                class="text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-2 py-0.5 rounded-md">Cost
+                                Analytics</span>
+                            <span
+                                class="text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-2 py-0.5 rounded-md">SKU
+                                Insights</span>
+                        </div>
+                        <button
+                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            style="background: rgba(16,185,129,0.25); border: 1px solid rgba(16,185,129,0.35);"
+                            onmouseover="this.style.background='rgba(16,185,129,0.4)'"
+                            onmouseout="this.style.background='rgba(16,185,129,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- App Governance -->
+                <div onclick="launchAppGovernance()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-violet-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-violet-950/40 flex flex-col">
+                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #2e1065 0%, #1a0a3d 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #a78bfa 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                            style="background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.3);">
+                            <i data-lucide="layout-grid" class="w-8 h-8 text-violet-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col gap-3 flex-1">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">App Governance</h3>
+                            <p class="text-xs text-violet-400 font-medium mt-0.5">Enterprise Application Visibility</p>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Review all enterprise apps, resolve
+                            group memberships, audit SSO coverage, and identify access risks across your directory.</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span
+                                class="text-xs bg-violet-950/60 text-violet-300 border border-violet-900/60 px-2 py-0.5 rounded-md">App
+                                Inventory</span>
+                            <span
+                                class="text-xs bg-violet-950/60 text-violet-300 border border-violet-900/60 px-2 py-0.5 rounded-md">SSO
+                                Coverage</span>
+                            <span
+                                class="text-xs bg-violet-950/60 text-violet-300 border border-violet-900/60 px-2 py-0.5 rounded-md">Audit
+                                Groups</span>
+                        </div>
+                        <button
+                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            style="background: rgba(139,92,246,0.25); border: 1px solid rgba(139,92,246,0.35);"
+                            onmouseover="this.style.background='rgba(139,92,246,0.4)'"
+                            onmouseout="this.style.background='rgba(139,92,246,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Device Governance -->
+                <div onclick="launchDeviceGovernance()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-cyan-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-950/40 flex flex-col">
+                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #0a2540 0%, #051525 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #67e8f9 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                            style="background: rgba(6,182,212,0.2); border: 1px solid rgba(6,182,212,0.3);">
+                            <i data-lucide="monitor-smartphone" class="w-8 h-8 text-cyan-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col gap-3 flex-1">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Device Governance</h3>
+                            <p class="text-xs text-cyan-400 font-medium mt-0.5">Endpoint Compliance &amp; Security</p>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Monitor Intune-managed device
+                            compliance, identify BitLocker gaps, and track Defender health across your organisation's
+                            endpoints.</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span
+                                class="text-xs bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-2 py-0.5 rounded-md">Intune
+                                Inventory</span>
+                            <span
+                                class="text-xs bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-2 py-0.5 rounded-md">BitLocker</span>
+                            <span
+                                class="text-xs bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-2 py-0.5 rounded-md">Defender
+                                Health</span>
+                        </div>
+                        <button
+                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            style="background: rgba(6,182,212,0.25); border: 1px solid rgba(6,182,212,0.35);"
+                            onmouseover="this.style.background='rgba(6,182,212,0.4)'"
+                            onmouseout="this.style.background='rgba(6,182,212,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+            <!-- Coming Soon — compact strip -->
+            <div
+                class="border border-surface-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-widest shrink-0">Coming Soon</p>
+                <div class="flex flex-wrap gap-3">
+                    <div class="flex items-center gap-2 opacity-40">
+                        <div class="w-6 h-6 rounded-md bg-surface-800 flex items-center justify-center">
+                            <i data-lucide="users" class="w-3.5 h-3.5 text-slate-500"></i>
+                        </div>
+                        <span class="text-sm text-slate-500">Identity Governance</span>
+                    </div>
+                    <div class="w-px h-4 bg-surface-700 self-center hidden sm:block"></div>
+                    <div class="flex items-center gap-2 opacity-40">
+                        <div class="w-6 h-6 rounded-md bg-surface-800 flex items-center justify-center">
+                            <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
+                        </div>
+                        <span class="text-sm text-slate-500">Security Posture</span>
+                    </div>
+                    <div class="w-px h-4 bg-surface-700 self-center hidden sm:block"></div>
+                    <div class="flex items-center gap-2 opacity-40">
+                        <div class="w-6 h-6 rounded-md bg-surface-800 flex items-center justify-center">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-500"></i>
+                        </div>
+                        <span class="text-sm text-slate-500">Compliance Reporting</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-10 pt-5 border-t border-surface-800 flex items-center justify-between">
+                <p class="text-xs text-slate-700">M365 Compass · Microsoft 365 Governance Platform</p>
+                <p class="text-xs text-slate-700">Read-only · No external telemetry</p>
+            </div>
+
+        </main>
+    </div><!-- /#view-hub -->
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Enterprise App Governance                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-appgov" class="hidden fixed inset-0 flex h-screen overflow-hidden">
+        <!-- App Gov Sidebar -->
+        <aside class="w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+            <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0">
+                    <i data-lucide="layout-grid" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <span class="text-white font-bold text-base leading-none block">Enterprise Application</span>
+                    <span class="text-slate-500 text-xs">Governance</span>
+                </div>
+            </div>
+            <!-- Back to hub -->
+            <button id="appgov-back-btn"
+                class="mx-3 mt-3 flex items-center gap-2 text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-surface-800 transition">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Hub
+            </button>
+            <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+                <button class="ag-nav-item nav-item active" data-agpage="appgov-overview">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span>
+                </button>
+                <button class="ag-nav-item nav-item" data-agpage="appgov-apps">
+                    <i data-lucide="layout-grid" class="w-4 h-4 shrink-0"></i><span>App Inventory</span>
+                </button>
+            </nav>
+            <div class="px-3 pb-4 border-t border-surface-800 pt-3 space-y-2">
+                <button id="appgov-refresh-btn" class="nav-item">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 shrink-0"></i><span>Refresh Data</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- App Gov Main -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header
+                class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex items-center gap-4 shrink-0">
+                <div class="flex-1">
+                    <h1 id="appgov-page-title" class="text-lg font-bold text-white">Overview</h1>
+                    <p id="appgov-page-subtitle" class="text-xs text-slate-400"></p>
+                </div>
+            </header>
+
+            <!-- App Gov Loading -->
+            <div id="appgov-loading" class="flex-1 flex items-center justify-center hidden">
+                <div class="w-full max-w-sm px-6 text-center">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-violet-900/40">
+                        <i data-lucide="layout-grid" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <p class="text-white font-semibold text-base mb-1" id="appgov-loading-text">Loading application
+                        data...</p>
+                    <p class="text-slate-500 text-xs mb-5" id="appgov-loading-sub-text">Please wait</p>
+                    <!-- Progress bar -->
+                    <div class="bg-surface-800 rounded-full h-2 overflow-hidden mb-3">
+                        <div id="appgov-progress-bar"
+                            class="h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full transition-all duration-500 ease-out"
+                            style="width: 0%"></div>
+                    </div>
+                    <p class="text-slate-500 text-xs" id="appgov-progress-pct">0%</p>
+                </div>
+            </div>
+
+            <!-- App Gov Pages -->
+            <main id="appgov-pages" class="flex-1 overflow-y-auto">
+
+                <!-- Overview -->
+                <section id="appgov-overview" class="ag-page-section p-6 space-y-5">
+                    <!-- KPIs -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-violet-500/15 text-violet-400"><i data-lucide="layout-grid"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value" id="ag-kpi-total-apps">-</div>
+                            <div class="kpi-label">Enterprise Apps</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-emerald-500/15 text-emerald-400"><i data-lucide="shield-check"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value text-emerald-400" id="ag-kpi-sso-enabled">-</div>
+                            <div class="kpi-label">SSO Configured</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-red-500/15 text-red-400"><i data-lucide="shield-off"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value text-red-400" id="ag-kpi-no-sso">-</div>
+                            <div class="kpi-label">No SSO</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-blue-500/15 text-blue-400"><i data-lucide="users"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value" id="ag-kpi-total-assigned">-</div>
+                            <div class="kpi-label">Total Assignments</div>
+                        </div>
+                    </div>
+                    <!-- Charts -->
+                    <div class="grid grid-cols-1 gap-5">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title"><i data-lucide="pie-chart" class="w-4 h-4 text-violet-400"></i>
+                                    SSO Coverage</h3>
+                            </div>
+                            <div class="chart-body flex items-center justify-center"><canvas id="chart-ag-sso"
+                                    class="max-h-64"></canvas></div>
+                        </div>
+                    </div>
+                    <!-- Quick table -->
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h3 class="section-title"><i data-lucide="list" class="w-4 h-4 text-violet-400"></i> Top
+                                Apps by Assignments</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Application</th>
+                                        <th>SSO</th>
+                                        <th class="text-right">Assigned</th>
+                                        <th>Last Sign-in</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ag-overview-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- App Inventory -->
+                <section id="appgov-apps" class="ag-page-section p-6 hidden">
+                    <div class="content-card">
+                        <div class="content-card-header flex-wrap gap-y-2">
+                            <h3 class="section-title"><i data-lucide="layout-grid" class="w-4 h-4 text-violet-400"></i>
+                                Application Inventory</h3>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div class="relative">
+                                    <i data-lucide="search"
+                                        class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                                    <input type="text" placeholder="Search apps..."
+                                        class="input-field pl-9 text-sm w-48" oninput="agAppSearchInput(this.value)" />
+                                </div>
+                                <select id="ag-sso-filter" class="input-field text-sm"
+                                    onchange="agSsoFilterChange(this.value)">
+                                    <option value="">All SSO Types</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="ag-audit-action-bar"
+                            class="bg-brand-900/30 border-y border-brand-800/50 px-6 py-3 flex flex-wrap items-center justify-between hidden transition-all">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="check-square" class="w-5 h-5 text-brand-400"></i>
+                                <span class="text-sm font-medium text-brand-100"><span id="ag-audit-count"
+                                        class="font-bold text-white">0</span> apps selected for Audit Group</span>
+                            </div>
+                            <div class="flex gap-2 mt-2 sm:mt-0">
+                                <button class="btn-primary btn-sm flex items-center gap-2"
+                                    onclick="exportAgAuditGroupCsv()">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Master CSV
+                                </button>
+                                <button class="btn-secondary btn-sm" onclick="agClearAuditGroup()">Clear</button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10 text-center">
+                                            <input type="checkbox" id="ag-apps-select-all"
+                                                class="rounded border-surface-600 bg-surface-900 accent-brand-500 w-4 h-4 cursor-pointer"
+                                                onclick="agToggleAllApps(this)">
+                                        </th>
+                                        <th>Application</th>
+                                        <th>SSO Mode</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-right">Assigned (d/g)</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ag-apps-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- App Detail -->
+                <section id="appgov-detail" class="ag-page-section p-6 space-y-5 hidden">
+                    <!-- Back link -->
+                    <button onclick="agNavigateTo('appgov-apps')"
+                        class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition mb-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to App Inventory
+                    </button>
+                    <!-- App info header -->
+                    <div class="content-card">
+                        <div class="p-5 flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-violet-900/40 flex items-center justify-center shrink-0">
+                                <i data-lucide="layout-grid" class="w-6 h-6 text-violet-400"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h2 id="ag-detail-name" class="text-xl font-bold text-white"></h2>
+                                <p id="ag-detail-publisher" class="text-sm text-slate-400"></p>
+                                <a id="ag-detail-homepage" href="#" target="_blank"
+                                    class="text-xs text-brand-400 hover:underline mt-1 block hidden"></a>
+                            </div>
+                            <div id="ag-detail-sso" class="shrink-0"></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 px-5 pb-5">
+                            <div class="bg-surface-900 rounded-xl p-3 text-center">
+                                <p class="text-2xl font-bold text-white" id="ag-detail-assigned">-</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Total Assigned</p>
+                            </div>
+                            <div class="bg-surface-900 rounded-xl p-3 text-center">
+                                <p class="text-2xl font-bold text-brand-400" id="ag-detail-direct">-</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Direct Users</p>
+                            </div>
+                            <div class="bg-surface-900 rounded-xl p-3 text-center">
+                                <p class="text-2xl font-bold text-violet-400" id="ag-detail-groups">-</p>
+                                <p class="text-xs text-slate-500 mt-0.5">Groups</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 2-col: activity + users table -->
+                    <!-- SSO Configuration panel (populated by detail.js) -->
+                    <div id="ag-detail-sso-config" class="hidden"></div>
+                    <!-- 2-col: activity + users table -->
+                    <div class="content-card">
+                        <div class="content-card-header flex items-center justify-between">
+                            <h3 class="section-title"><i data-lucide="users" class="w-4 h-4 text-violet-400"></i>
+                                Assigned Users</h3>
+                            <button id="ag-detail-export-btn" class="btn-secondary btn-sm"
+                                onclick="exportAgAppUsersCsv()">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Assignment</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ag-detail-users-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div><!-- /#view-appgov -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Device Governance                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-devicegov" class="hidden">
+        <!-- App Shell -->
+        <div class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <aside class="w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+                <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="monitor-smartphone" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="text-white font-bold text-base leading-none block">Device Governance</span>
+                        <span class="text-slate-500 text-xs">Endpoint Security</span>
+                    </div>
+                </div>
+                <!-- Back to hub -->
+                <button id="devicegov-back-btn"
+                    class="mx-3 mt-3 flex items-center gap-2 text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-surface-800 transition">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Hub
+                </button>
+                <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+                    <button class="dg-nav-item nav-item active" data-dgpage="devicegov-overview">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span>
+                    </button>
+                    <button class="dg-nav-item nav-item" data-dgpage="devicegov-inventory">
+                        <i data-lucide="pc-case" class="w-4 h-4 shrink-0"></i><span>Device Inventory</span>
+                    </button>
+                    <button class="dg-nav-item nav-item" data-dgpage="devicegov-encryption">
+                        <i data-lucide="lock" class="w-4 h-4 shrink-0"></i><span>Device Encryption</span>
+                    </button>
+                    <button class="dg-nav-item nav-item" data-dgpage="devicegov-compliance-report">
+                        <i data-lucide="clipboard-check" class="w-4 h-4 shrink-0"></i><span>Compliance Report</span>
+                    </button>
+                    <button class="dg-nav-item nav-item" data-dgpage="devicegov-compliance">
+                        <i data-lucide="shield-alert" class="w-4 h-4 shrink-0"></i><span>Compliance & Security</span>
+                    </button>
+                </nav>
+                <div class="px-3 pb-4 border-t border-surface-800 pt-3 space-y-2">
+                    <button id="devicegov-refresh-btn" class="nav-item">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 shrink-0"></i><span>Refresh Data</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Device Gov Main -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <header
+                    class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex items-center gap-4 shrink-0">
+                    <div class="flex-1">
+                        <h1 id="devicegov-page-title" class="text-lg font-bold text-white">Overview</h1>
+                        <p id="devicegov-page-subtitle" class="text-xs text-slate-400">Endpoint health at a glance
+                        </p>
+                    </div>
+                    <div
+                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface-800 border border-surface-700 rounded-lg">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft"></div>
+                        <span class="text-xs font-medium text-slate-300" id="devicegov-sync-status">Intune Synced</span>
+                    </div>
+                </header>
+
+                <div id="devicegov-loading-overlay"
+                    class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-8 hidden">
+                    <div
+                        class="w-full max-w-md bg-surface-900 border border-surface-800 rounded-2xl p-8 shadow-2xl text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-cyan-900/30 flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="monitor-smartphone" class="w-8 h-8 text-cyan-400 animate-pulse"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Syncing Intune Devices</h3>
+                        <p class="text-slate-500 text-xs mb-5" id="devicegov-loading-sub-text">Please wait</p>
+                        <!-- Progress bar -->
+                        <div class="bg-surface-800 rounded-full h-2 overflow-hidden mb-3">
+                            <div id="devicegov-progress-bar"
+                                class="h-full bg-gradient-to-r from-cyan-500 to-blue-400 rounded-full transition-all duration-500 ease-out"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-slate-500 text-xs" id="devicegov-progress-pct">0%</p>
+                    </div>
+                </div>
+
+                <!-- Device Gov Pages -->
+                <main id="devicegov-pages" class="flex-1 overflow-y-auto">
+                    <!-- Blank placeholders for pages -->
+                    <section id="devicegov-overview" class="dg-page-section p-6 space-y-5"></section>
+                    <section id="devicegov-inventory" class="dg-page-section p-6 hidden"></section>
+                    <section id="devicegov-compliance" class="dg-page-section p-6 hidden"></section>
+                    <section id="devicegov-encryption" class="dg-page-section p-6 hidden"></section>
+                    <section id="devicegov-compliance-report" class="dg-page-section p-6 hidden"></section>
+                </main>
+            </div>
+
+            <!-- ── Device Detail Drawer ──────────────────────────────── -->
+            <!-- Fixed overlay backdrop -->
+            <div id="dg-detail-backdrop"
+                class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity duration-200"
+                onclick="dgCloseDeviceDetail()"></div>
+
+            <!-- Slide-over panel -->
+            <div id="dg-detail-panel"
+                class="fixed top-0 right-0 h-full w-full max-w-md bg-surface-900 border-l border-surface-700 z-50 flex flex-col shadow-2xl translate-x-full transition-transform duration-300 ease-in-out">
+
+                <!-- Panel Header -->
+                <div class="flex items-start justify-between gap-4 px-6 py-5 border-b border-surface-800 shrink-0">
+                    <div class="min-w-0">
+                        <h2 id="dg-detail-name" class="text-base font-bold text-white truncate">Device Details</h2>
+                        <p id="dg-detail-subtitle" class="text-xs text-slate-400 mt-0.5 truncate">Loading...</p>
+                    </div>
+                    <button onclick="dgCloseDeviceDetail()"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-surface-700 transition shrink-0">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Loading state -->
+                <div id="dg-detail-loading" class="flex flex-col items-center justify-center flex-1 gap-3 hidden">
+                    <i data-lucide="loader-circle" class="w-8 h-8 text-cyan-400 animate-spin"></i>
+                    <p class="text-sm text-slate-400">Fetching device details...</p>
+                </div>
+
+                <!-- Panel Body -->
+                <div id="dg-detail-body" class="flex-1 overflow-y-auto p-6 space-y-5 hidden">
+
+                    <!-- Status badges row -->
+                    <div id="dg-detail-badges" class="flex flex-wrap gap-2"></div>
+
+                    <!-- Key Properties -->
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h3 class="section-title text-sm"><i data-lucide="info"
+                                    class="w-3.5 h-3.5 text-cyan-400"></i> Device Information</h3>
+                        </div>
+                        <dl class="divide-y divide-surface-800" id="dg-detail-info"></dl>
+                    </div>
+
+                    <!-- Hardware -->
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h3 class="section-title text-sm"><i data-lucide="cpu"
+                                    class="w-3.5 h-3.5 text-cyan-400"></i> Hardware</h3>
+                        </div>
+                        <dl class="divide-y divide-surface-800" id="dg-detail-hardware"></dl>
+                    </div>
+
+                    <!-- Assigned User -->
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h3 class="section-title text-sm"><i data-lucide="user"
+                                    class="w-3.5 h-3.5 text-cyan-400"></i> Assigned User</h3>
+                        </div>
+                        <dl class="divide-y divide-surface-800" id="dg-detail-user"></dl>
+                    </div>
+
+                </div>
+
+                <!-- Panel Footer -->
+                <div class="border-t border-surface-800 px-6 py-4 shrink-0 flex items-center justify-between">
+                    <span class="text-xs text-slate-500" id="dg-detail-footer-note">Intune managed device</span>
+                    <button onclick="dgCloseDeviceDetail()" class="btn-secondary btn-sm">Close</button>
+                </div>
+            </div>
+
+        </div><!-- /.flex.h-screen -->
+    </div><!-- /#view-devicegov -->
+
+    <script src="js/graph.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/pages/overview.js"></script>
+    <script src="js/pages/inventory.js"></script>
+    <script src="js/pages/users.js"></script>
+    <script src="js/pages/inactive.js"></script>
+    <script src="js/pages/devices.js"></script>
+    <script src="js/pages/analytics.js"></script>
+    <script src="js/pages/insights.js"></script>
+    <script src="js/pages/reports.js"></script>
+    <script src="js/pages/sku-filter.js"></script>
+    <script src="js/appgov/graph.js"></script>
+    <script src="js/appgov/demo.js"></script>
+    <script src="js/appgov/pages/overview.js"></script>
+    <script src="js/appgov/pages/apps.js"></script>
+    <script src="js/appgov/pages/detail.js"></script>
+    <script src="js/appgov/pages/inactive.js"></script>
+    <script src="js/appgov/ui.js"></script>
+
+    <script src="js/devicegov/graph.js"></script>
+    <script src="js/devicegov/demo.js"></script>
+    <script src="js/devicegov/pages/detail.js"></script>
+    <script src="js/devicegov/pages/overview.js"></script>
+    <script src="js/devicegov/pages/inventory.js"></script>
+    <script src="js/devicegov/pages/compliance.js"></script>
+    <script src="js/devicegov/pages/encryption.js"></script>
+    <script src="js/devicegov/pages/compliance-report.js"></script>
+    <script src="js/devicegov/ui.js"></script>
+
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+
+</html>
