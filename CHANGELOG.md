@@ -1,44 +1,63 @@
-# 📋 Changelog
+# 📋 Changelog — M365 Compass
 
-All notable changes to the **M365 Compass** project will be documented in this file.
+All notable changes to the **M365 Compass** platform are documented here. This project has evolved from a targeted license tool into a multi-module governance platform.
 
 ---
 
-## [1.2.0] - 2026-02-26
+## [1.2.0] - 2026-02-26 (Current)
 ### Added
-- **Professional Documentation**: Generated a comprehensive `README.md` and this `CHANGELOG.md`.
-- **Git Security**: Implemented a robust `.gitignore` excluding `local.settings.json`, `.vscode`, `node_modules`, and other sensitive/temporary files.
-- **Push Protection Resolution**: Purged secrets from Git history using `git filter-branch` to resolve GitHub's push protection flagging.
+- **Unified Documentation**: Consolidated architecture, overview, and quick-start guides into the `/docs` directory.
+- **Professional README**: Created a feature-rich project landing page.
+- **Git Security Hardening**: Implemented comprehensive `.gitignore` and purged historical secrets (Azure AD keys) from Git history to resolve push protection issues.
 
 ### Changed
-- **Repository Management**: Successfully pushed the project to the `main` branch on GitHub.
+- **Repository Setup**: Initialized and pushed the clean codebase to its new GitHub home on the `main` branch.
 
 ---
 
-## [1.1.0] - 2026-02-25
+## [1.1.5] - 2026-02-26
 ### Added
-- **Optimization Insights**: Implementation of 7 auto-generated categories for cost savings.
-- **Device Insights**: Added device type and OS breakdown charts for premium users.
-- **Reports Hub**: Created 5 dedicated CSV export types (Inventory, Inactive, Utilization, Optimization, Device).
-- **Hub Interface**: Integrated a high-level "Hub" view for navigating between different governance modules.
+- **Device Governance (Module 3)**: Introduced the `devicegov` module.
+  - **Intune Integration**: Real-time connection to Microsoft Intune via Graph API.
+  - **Compliance Monitoring**: Dashboard for non-compliant, unencrypted, and at-risk devices.
+  - **Hardware Insights**: Slide-over panel for deep hardware/OS specs per device.
+  - **Encryption Auditing**: Dedicated view for BitLocker (Windows) and FileVault (macOS) status.
+- **Device & Usage Insights**: Added cross-module usage charts showing OS distribution and premium license access patterns.
 
-### Fixed
-- Resolved `navigateTo` scoping issues for inline event handlers.
-- Fixed demo data hoisting where `makeUser()` was called before definition.
-- Cleaned up unused variables and placeholder code.
+---
+
+## [1.1.0] - 2026-02-26
+### Added
+- **Enterprise App Governance (Module 2)**: Introduced the `appgov` module.
+  - **SSO Coverage Auditing**: Visualization of SAML vs OIDC vs Password SSO across the tenant.
+  - **Deep Group Expansion**: Implemented transitive member resolution (up to 5 levels) to audit true application access.
+  - **Module Persistence**: Added local persistence for app data to handle large service principal payloads.
+- **M365 Compass Hub**: Built the "Hub" view to allow administrators to switch seamlessly between Licence, App, and Device governance.
+
+### Changed
+- **Rebranding**: Transitioned product name from "LicenseGuard" to **M365 Compass** to reflect the broader governance scope.
+
+---
+
+## [1.0.5] - 2026-02-25
+### Added
+- **Analytics & Cost Optimization**:
+  - **Departmental Cost Analysis**: Bar charts breaking down license spend by HR, Engineering, Sales, etc.
+  - **Optimization Recommendations**: 7 automatic categories identification (e.g., reclaiming E5s from inactive users).
+  - **Spend Mapping**: Interactive SKU rate management with dollar-savings projections.
+- **Performance**: Integrated `localforage` (IndexedDB) for persistent client-side data caching.
 
 ---
 
 ## [1.0.0] - 2026-02-25
 ### Added
-- **Initial Release**: Core platform build-out.
-- **Authentication**: MSAL.js v3 integration with redirect flow and silent refresh.
-- **Dashboard**: 5 KPI cards and 4 interactive Chart.js visualizations.
-- **Licence Inventory**: Detailed SKU management with utilization tracking.
-- **User Directory**: Searchable, sortable, and paginated user view.
-- **Inactive User Tracking**: Threshold-based inactivity monitoring with visual severity coding.
-- **Dark Mode**: Persistent dark/light theme implementation using CSS variables and Tailwind.
+- **Initial Build (LicenseGuard)**: The foundation of the platform focusing on M365 License Optimization.
+- **Core Engine**: Fully client-side SPA with no build step required.
+- **MSAL.js v3**: Secure Entra ID authentication with PKCE and token management.
+- **Dashboard**: Initial KPI cards and Chart.js distribution donuts.
+- **User Governance**: Searchable/sortable table for all licensed users.
+- **Inactivity Tracking**: Threshold-based monitoring for unused licenses.
 
 ---
 
-*Note: History compiled from Antigravity conversation logs.*
+*Note: History reconstructed from development logs and architectural documentation.*
