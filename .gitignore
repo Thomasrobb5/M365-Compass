@@ -7,3 +7,4 @@ build/
 .env
 .history/
 .vscode/
+backend-worker/local.settings.json
