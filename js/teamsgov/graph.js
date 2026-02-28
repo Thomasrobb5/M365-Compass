@@ -15,7 +15,7 @@ async function tgLoadGraphData() {
     tgUpdateLoading(10, "Fetching Teams list...");
     window.tgData.teams = [];
 
-    if (!msalInstance.getAllAccounts().length) {
+    if (!LG.msalInstance.getAllAccounts().length) {
         throw new Error("No active MSAL account found.");
     }
 
@@ -29,11 +29,11 @@ async function tgLoadGraphData() {
         let groupsUrl = "https://graph.microsoft.com/v1.0/groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')&$select=id,displayName,description,visibility,createdDateTime";
         let allGroups = [];
 
-        let groupsData = await callGraphApi(groupsUrl);
+        let groupsData = await graphFetch(groupsUrl);
         if (groupsData && groupsData.value) {
             allGroups = allGroups.concat(groupsData.value);
             while (groupsData['@odata.nextLink']) {
-                groupsData = await callGraphApi(groupsData['@odata.nextLink']);
+                groupsData = await graphFetch(groupsData['@odata.nextLink']);
                 allGroups = allGroups.concat(groupsData.value || []);
             }
         }
@@ -54,7 +54,7 @@ async function tgLoadGraphData() {
                 const ownersUrl = `https://graph.microsoft.com/v1.0/groups/${group.id}/owners?$select=id,userPrincipalName`;
                 let owners = [];
                 try {
-                    const oData = await callGraphApi(ownersUrl);
+                    const oData = await graphFetch(ownersUrl);
                     owners = oData.value || [];
                 } catch (e) { console.warn(`Failed to fetch owners for ${group.id}`); }
 
@@ -64,7 +64,7 @@ async function tgLoadGraphData() {
                 let members = [];
                 let guests = [];
                 try {
-                    const mData = await callGraphApi(membersUrl);
+                    const mData = await graphFetch(membersUrl);
                     members = mData.value || [];
                     guests = members.filter(m => m.userType === 'Guest' || m.userPrincipalName?.includes('#EXT#'));
                 } catch (e) { console.warn(`Failed to fetch members for ${group.id}`); }
@@ -109,7 +109,7 @@ async function tgCreateTeamGraph(name, description, ownerUpn, templatePrefix) {
     const userUrl = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(ownerUpn)}?$select=id`;
     let userId;
     try {
-        const uData = await callGraphApi(userUrl);
+        const uData = await graphFetch(userUrl);
         if (!uData.id) throw new Error("User not found");
         userId = uData.id;
     } catch (e) {
@@ -134,7 +134,7 @@ async function tgCreateTeamGraph(name, description, ownerUpn, templatePrefix) {
 
     let newGroup;
     try {
-        newGroup = await callGraphApi("https://graph.microsoft.com/v1.0/groups", "POST", createGroupPayload);
+        newGroup = await graphFetch("https://graph.microsoft.com/v1.0/groups", { method: "POST", body: JSON.stringify(createGroupPayload) });
         if (!newGroup || !newGroup.id) throw new Error("Failed to create M365 Group");
     } catch (e) {
         console.error(e);
@@ -159,10 +159,12 @@ async function tgCreateTeamGraph(name, description, ownerUpn, templatePrefix) {
                 "giphyContentRating": "strict"
             }
         };
-        await callGraphApi(`https://graph.microsoft.com/v1.0/teams`, "POST", {
-            "template@odata.bind": "https://graph.microsoft.com/v1.0/teamsTemplates('standard')",
-            "group@odata.bind": `https://graph.microsoft.com/v1.0/groups('${newGroup.id}')`,
-            ...teamPayload
+        await graphFetch(`https://graph.microsoft.com/v1.0/teams`, {
+            method: "POST", body: JSON.stringify({
+                "template@odata.bind": "https://graph.microsoft.com/v1.0/teamsTemplates('standard')",
+                "group@odata.bind": `https://graph.microsoft.com/v1.0/groups('${newGroup.id}')`,
+                ...teamPayload
+            })
         });
 
         return newGroup.id;
