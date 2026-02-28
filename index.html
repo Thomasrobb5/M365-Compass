@@ -955,6 +955,45 @@
                     </div>
                 </div>
 
+                <!-- Teams Governance -->
+                <div onclick="launchTeamsGovernance()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-blue-950/40 flex flex-col">
+                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #1e3a8a 0%, #172554 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #93c5fd 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                            style="background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.3);">
+                            <i data-lucide="users" class="w-8 h-8 text-blue-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col gap-3 flex-1">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Teams Governance</h3>
+                            <p class="text-xs text-blue-400 font-medium mt-0.5">Workspace Monitoring & Creation</p>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Monitor all Microsoft Teams, track
+                            external members, manage ownerless teams, and provision new workspaces from templates.</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span
+                                class="text-xs bg-blue-950/60 text-blue-300 border border-blue-900/60 px-2 py-0.5 rounded-md">External
+                                Access</span>
+                            <span
+                                class="text-xs bg-blue-950/60 text-blue-300 border border-blue-900/60 px-2 py-0.5 rounded-md">Ownerless</span>
+                            <span
+                                class="text-xs bg-blue-950/60 text-blue-300 border border-blue-900/60 px-2 py-0.5 rounded-md">Templates</span>
+                        </div>
+                        <button
+                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            style="background: rgba(59,130,246,0.25); border: 1px solid rgba(59,130,246,0.35);"
+                            onmouseover="this.style.background='rgba(59,130,246,0.4)'"
+                            onmouseout="this.style.background='rgba(59,130,246,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
             </div>
             <!-- Coming Soon — compact strip -->
             <div
@@ -1443,6 +1482,300 @@
 
         </div><!-- /.flex.h-screen -->
     </div><!-- /#view-devicegov -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Teams Governance                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-teamsgov" class="hidden">
+        <!-- App Shell -->
+        <div class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <aside class="w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+                <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="users" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="text-white font-bold text-base leading-none block">Teams Governance</span>
+                        <span class="text-slate-500 text-xs">Workspace Management</span>
+                    </div>
+                </div>
+                <!-- Back to hub -->
+                <button id="teamsgov-back-btn"
+                    class="mx-3 mt-3 flex items-center gap-2 text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-surface-800 transition">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Hub
+                </button>
+                <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+                    <button class="tg-nav-item nav-item active" data-tgpage="teamsgov-overview">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span>
+                    </button>
+                </nav>
+                <div class="px-3 pb-4 border-t border-surface-800 pt-3 space-y-2">
+                    <button id="teamsgov-refresh-btn" class="nav-item">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 shrink-0"></i><span>Refresh Data</span>
+                    </button>
+                    <!-- Provide a quick way to launch the create team modal -->
+                    <button onclick="tgOpenCreateTeamModal()" class="nav-item text-blue-400 hover:bg-blue-900/20">
+                        <i data-lucide="plus-circle" class="w-4 h-4 shrink-0"></i><span>Create Team</span>
+                    </button>
+                </div>
+                <div class="px-6 py-4 mt-auto border-t border-surface-800">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Created By</p>
+                    <p class="text-xs font-bold text-white">Thomas Robb</p>
+                    <p class="text-[10px] text-slate-500">Solutions Engineer</p>
+                    <p class="text-[10px] text-slate-600 mt-2">© 2026 M365 Compass</p>
+                </div>
+            </aside>
+
+            <!-- Teams Gov Main -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <header
+                    class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex items-center gap-4 shrink-0 justify-between">
+                    <div class="flex-1">
+                        <h1 id="teamsgov-page-title" class="text-lg font-bold text-white">Overview</h1>
+                        <p id="teamsgov-page-subtitle" class="text-xs text-slate-400">Microsoft Teams monitoring at
+                            a glance
+                        </p>
+                    </div>
+                    <!-- Action button on header -->
+                    <div class="flex items-center gap-3">
+                        <button onclick="tgOpenCreateTeamModal()"
+                            class="btn-primary py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i> New Team
+                        </button>
+                    </div>
+                </header>
+
+                <div id="teamsgov-loading-overlay"
+                    class="fixed inset-0 bg-surface-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-8 hidden">
+                    <div
+                        class="w-full max-w-md bg-surface-900 border border-surface-800 rounded-2xl p-8 shadow-2xl text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-blue-900/30 flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="users" class="w-8 h-8 text-blue-400 animate-pulse"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" id="teamsgov-loading-title">Scanning Teams
+                        </h3>
+                        <p class="text-slate-500 text-xs mb-5" id="teamsgov-loading-sub-text">Please wait</p>
+                        <!-- Progress bar -->
+                        <div class="bg-surface-800 rounded-full h-2 overflow-hidden mb-3">
+                            <div id="teamsgov-progress-bar"
+                                class="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all duration-500 ease-out"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-slate-500 text-xs" id="teamsgov-progress-pct">0%</p>
+                    </div>
+                </div>
+
+                <!-- Teams Gov Pages -->
+                <main id="teamsgov-pages" class="flex-1 overflow-y-auto">
+                    <!-- Overview Section -->
+                    <section id="teamsgov-overview" class="tg-page-section p-6 space-y-6">
+                        <!-- KPIs -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-blue-500/15 text-blue-400"><i data-lucide="users"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="tg-kpi-total">-</div>
+                                <div class="kpi-label">Total Teams</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-amber-500/15 text-amber-400"><i data-lucide="user-x"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value text-amber-400" id="tg-kpi-ownerless">-</div>
+                                <div class="kpi-label">Teams Without Owners</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-violet-500/15 text-violet-400"><i data-lucide="globe"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value text-violet-400" id="tg-kpi-public">-</div>
+                                <div class="kpi-label">Public Teams</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-icon bg-emerald-500/15 text-emerald-400"><i data-lucide="user-plus"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value text-emerald-400" id="tg-kpi-external">-</div>
+                                <div class="kpi-label">Teams With Guests</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5">
+                            <!-- Visibility Chart -->
+                            <div class="content-card">
+                                <div class="content-card-header">
+                                    <h3 class="section-title"><i data-lucide="eye" class="w-4 h-4 text-violet-400"></i>
+                                        Team Visibility</h3>
+                                </div>
+                                <div class="h-64 p-4 flex items-center justify-center">
+                                    <canvas id="chart-tg-visibility"></canvas>
+                                </div>
+                            </div>
+                            <!-- Templates Chart -->
+                            <div class="content-card">
+                                <div class="content-card-header">
+                                    <h3 class="section-title"><i data-lucide="layout-template"
+                                            class="w-4 h-4 text-amber-400"></i> Provisioning Templates</h3>
+                                </div>
+                                <div class="h-64 p-4 flex items-center justify-center">
+                                    <canvas id="chart-tg-templates"></canvas>
+                                </div>
+                            </div>
+                            <!-- Guest Chart -->
+                            <div class="content-card">
+                                <div class="content-card-header">
+                                    <h3 class="section-title"><i data-lucide="users"
+                                            class="w-4 h-4 text-emerald-400"></i> External Collaboration</h3>
+                                </div>
+                                <div class="h-64 p-4 flex items-center justify-center">
+                                    <canvas id="chart-tg-guests"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Data Table for Teams -->
+                        <div class="content-card mt-5">
+                            <div class="content-card-header flex items-center justify-between">
+                                <h3 class="section-title"><i data-lucide="list" class="w-4 h-4 text-blue-400"></i>
+                                    All Teams</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="relative"><i data-lucide="search"
+                                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
+                                            id="tg-search" type="text" placeholder="Search teams..."
+                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams()" /></div>
+                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv()"><i
+                                            data-lucide="download" class="w-3.5 h-3.5"></i> CSV</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Team Name</th>
+                                            <th>Visibility</th>
+                                            <th class="text-center">Owners</th>
+                                            <th class="text-center">Guests</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tg-teams-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </section>
+                </main>
+            </div>
+        </div><!-- /.flex.h-screen -->
+    </div><!-- /#view-teamsgov -->
+
+    <!-- Create Team Modal -->
+    <div id="tg-create-modal"
+        class="fixed inset-0 z-[8500] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden animate-fade-in">
+        <div
+            class="bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl w-full max-w-lg mx-4 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between p-6 border-b border-surface-700 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-900/40 flex items-center justify-center shrink-0">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Create New Team</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Provision a new, private Microsoft Team</p>
+                    </div>
+                </div>
+                <button onclick="tgCloseCreateTeamModal()"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-surface-700 transition shrink-0">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 p-6 space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Team Template <span
+                            class="text-red-400">*</span></label>
+                    <div class="grid grid-cols-1 gap-3">
+                        <!-- Template: External -->
+                        <label
+                            class="flex items-start gap-3 p-3 border border-surface-700 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-surface-700/50 transition">
+                            <input type="radio" name="tg-template" value="EXT" class="mt-1 accent-blue-500 w-4 h-4"
+                                checked>
+                            <div>
+                                <p class="text-sm font-bold text-white">External Team <span
+                                        class="text-xs bg-blue-900/50 text-blue-400 px-1.5 py-0.5 rounded ml-2">EXT-</span>
+                                </p>
+                                <p class="text-xs text-slate-500 mt-0.5">For collaborating with external partners or
+                                    clients.</p>
+                            </div>
+                        </label>
+                        <!-- Template: Project -->
+                        <label
+                            class="flex items-start gap-3 p-3 border border-surface-700 rounded-xl cursor-pointer hover:border-violet-500/50 hover:bg-surface-700/50 transition">
+                            <input type="radio" name="tg-template" value="PRJ" class="mt-1 accent-violet-500 w-4 h-4">
+                            <div>
+                                <p class="text-sm font-bold text-white">Project Team <span
+                                        class="text-xs bg-violet-900/50 text-violet-400 px-1.5 py-0.5 rounded ml-2">PRJ-</span>
+                                </p>
+                                <p class="text-xs text-slate-500 mt-0.5">For internal cross-functional project
+                                    execution.</p>
+                            </div>
+                        </label>
+                        <!-- Template: Department -->
+                        <label
+                            class="flex items-start gap-3 p-3 border border-surface-700 rounded-xl cursor-pointer hover:border-emerald-500/50 hover:bg-surface-700/50 transition">
+                            <input type="radio" name="tg-template" value="DPT" class="mt-1 accent-emerald-500 w-4 h-4">
+                            <div>
+                                <p class="text-sm font-bold text-white">Department Team <span
+                                        class="text-xs bg-emerald-900/50 text-emerald-400 px-1.5 py-0.5 rounded ml-2">DPT-</span>
+                                </p>
+                                <p class="text-xs text-slate-500 mt-0.5">For internal department communications and
+                                    files.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Base Team Name <span
+                            class="text-red-400">*</span></label>
+                    <div class="flex items-center gap-2">
+                        <span id="tg-prefix-preview"
+                            class="text-sm font-bold text-slate-400 bg-surface-900 px-3 py-2.5 rounded-lg border border-surface-700">EXT-</span>
+                        <input id="tg-team-name" type="text" placeholder="e.g. Marketing Launch"
+                            class="input-field w-full" />
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Final name will be: <span id="tg-final-name-preview"
+                            class="text-blue-400 font-semibold">EXT-Marketing Launch</span></p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Description</label>
+                    <textarea id="tg-team-desc" rows="2" placeholder="Brief description of the team's purpose..."
+                        class="input-field w-full resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Primary Owner (UPN) <span
+                            class="text-red-400">*</span></label>
+                    <input id="tg-team-owner" type="email" placeholder="user@domain.com" class="input-field w-full" />
+                    <p class="text-[10px] text-slate-500 mt-1">Must be an exact User Principal Name (UPN) of an
+                        existing user.</p>
+                </div>
+
+                <!-- Feedback / Status -->
+                <div id="tg-create-status" class="hidden p-3 rounded-xl border text-sm mt-2"></div>
+            </div>
+
+            <div class="border-t border-surface-800 px-6 py-4 shrink-0 flex gap-3">
+                <button id="tg-create-btn" onclick="tgSubmitCreateTeam()"
+                    class="flex-1 btn-primary py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i> Provision Team
+                </button>
+                <button onclick="tgCloseCreateTeamModal()"
+                    class="px-4 py-2.5 rounded-xl text-sm font-semibold btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <script src="js/graph.js"></script>
     <script src="js/charts.js"></script>
@@ -1472,6 +1805,11 @@
     <script src="js/devicegov/pages/encryption.js"></script>
     <script src="js/devicegov/pages/compliance-report.js"></script>
     <script src="js/devicegov/ui.js"></script>
+
+    <script src="js/teamsgov/graph.js"></script>
+    <script src="js/teamsgov/demo.js"></script>
+    <script src="js/teamsgov/pages/overview.js"></script>
+    <script src="js/teamsgov/ui.js"></script>
 
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>

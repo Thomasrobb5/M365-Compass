@@ -353,3 +353,103 @@ window.renderDeviceCharts = renderDeviceCharts;
 window.renderDeptCostChart = renderDeptCostChart;
 window.renderLicenceTrendChart = renderLicenceTrendChart;
 window.renderActivityHeatmapChart = renderActivityHeatmapChart;
+
+// ── Teams Governance Charts ───────────────────────────────────────────────
+function renderTeamsVisibilityChart(teams) {
+    destroyChart('tg-visibility');
+    const canvas = document.getElementById('chart-tg-visibility');
+    if (!canvas) return;
+
+    let pub = 0, priv = 0;
+    teams.forEach(t => {
+        if (t.visibility.toLowerCase() === 'public') pub++;
+        else priv++;
+    });
+
+    LG.chartInstances['tg-visibility'] = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['Private', 'Public'],
+            datasets: [{
+                data: [priv, pub],
+                backgroundColor: ['#8b5cf688', '#10b98188'],
+                borderColor: ['#8b5cf6', '#10b981'],
+                borderWidth: 2, hoverOffset: 4
+            }]
+        },
+        options: {
+            ...chartDefaults(),
+            cutout: '70%',
+            plugins: { ...chartDefaults().plugins, legend: { position: 'bottom', ...chartDefaults().plugins.legend } },
+            scales: {}
+        }
+    });
+}
+
+function renderTeamsTemplateChart(teams) {
+    destroyChart('tg-templates');
+    const canvas = document.getElementById('chart-tg-templates');
+    if (!canvas) return;
+
+    const counts = { 'External (EXT)': 0, 'Project (PRJ)': 0, 'Department (DPT)': 0, 'Other': 0 };
+    teams.forEach(t => {
+        const name = (t.displayName || '').toUpperCase();
+        if (name.startsWith('EXT-')) counts['External (EXT)']++;
+        else if (name.startsWith('PRJ-')) counts['Project (PRJ)']++;
+        else if (name.startsWith('DPT-')) counts['Department (DPT)']++;
+        else counts['Other']++;
+    });
+
+    LG.chartInstances['tg-templates'] = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(counts),
+            datasets: [{
+                label: 'Teams',
+                data: Object.values(counts),
+                backgroundColor: ['#3b82f6aa', '#8b5cf6aa', '#10b981aa', '#64748baa'],
+                borderColor: ['#3b82f6', '#8b5cf6', '#10b981', '#64748b'],
+                borderWidth: 1, borderRadius: 4
+            }]
+        },
+        options: {
+            ...chartDefaults(),
+            plugins: { ...chartDefaults().plugins, legend: { display: false } }
+        }
+    });
+}
+
+function renderTeamsGuestsChart(teams) {
+    destroyChart('tg-guests');
+    const canvas = document.getElementById('chart-tg-guests');
+    if (!canvas) return;
+
+    let withGuests = 0, without = 0;
+    teams.forEach(t => {
+        if (t.guests > 0) withGuests++;
+        else without++;
+    });
+
+    LG.chartInstances['tg-guests'] = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['With Guests', 'Internal Only'],
+            datasets: [{
+                data: [withGuests, without],
+                backgroundColor: ['#f59e0b88', '#3b82f688'],
+                borderColor: ['#f59e0b', '#3b82f6'],
+                borderWidth: 2, hoverOffset: 4
+            }]
+        },
+        options: {
+            ...chartDefaults(),
+            cutout: '70%',
+            plugins: { ...chartDefaults().plugins, legend: { position: 'bottom', ...chartDefaults().plugins.legend } },
+            scales: {}
+        }
+    });
+}
+
+window.renderTeamsVisibilityChart = renderTeamsVisibilityChart;
+window.renderTeamsTemplateChart = renderTeamsTemplateChart;
+window.renderTeamsGuestsChart = renderTeamsGuestsChart;
