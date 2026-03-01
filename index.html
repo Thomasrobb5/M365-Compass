@@ -1050,43 +1050,39 @@
                 <p class="text-sm text-slate-500 mt-1">Select a module to begin</p>
             </div>
 
-            <!-- Big Module Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <!-- Bento Box Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
 
                 <!-- Licence Governance -->
                 <div onclick="launchLicenceGovernance()"
-                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-emerald-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-950/40 flex flex-col">
-                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-emerald-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-950/40 flex flex-col col-span-1">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
                         style="background: linear-gradient(145deg, #052e16 0%, #021a0c 100%);">
                         <div class="absolute inset-0 opacity-10"
                             style="background-image: radial-gradient(circle, #6ee7b7 1px, transparent 1px); background-size: 20px 20px;">
                         </div>
-                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
                             style="background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3);">
-                            <i data-lucide="shield-check" class="w-8 h-8 text-emerald-300"></i>
+                            <i data-lucide="shield-check" class="w-6 h-6 text-emerald-300"></i>
                         </div>
                     </div>
-                    <div class="p-6 flex flex-col gap-3 flex-1">
+                    <div class="p-5 flex flex-col gap-2 flex-1">
                         <div>
-                            <h3 class="text-lg font-bold text-white">Licence Governance</h3>
-                            <p class="text-xs text-emerald-400 font-medium mt-0.5">M365 Cost Optimisation</p>
+                            <h3 class="text-base font-bold text-white leading-tight">Licence Governance</h3>
+                            <p class="text-[10px] text-emerald-400 font-medium mt-0.5 uppercase tracking-wider">Cost
+                                Optimisation</p>
                         </div>
-                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Identify inactive licensed users,
-                            surface unused licences, analyse department spend, and generate actionable cost-saving
-                            recommendations.</p>
-                        <div class="flex flex-wrap gap-1.5">
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Identify inactive licensed
+                            users, surface unused licences, and generate actionable cost-saving recommendations.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
                             <span
-                                class="text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-2 py-0.5 rounded-md">Inactive
-                                Users</span>
+                                class="text-[10px] bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-1.5 py-0.5 rounded">Inactive</span>
                             <span
-                                class="text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-2 py-0.5 rounded-md">Cost
-                                Analytics</span>
-                            <span
-                                class="text-xs bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-2 py-0.5 rounded-md">SKU
-                                Insights</span>
+                                class="text-[10px] bg-emerald-950/60 text-emerald-300 border border-emerald-900/60 px-1.5 py-0.5 rounded">Costs</span>
                         </div>
+
                         <button
-                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
                             style="background: rgba(16,185,129,0.25); border: 1px solid rgba(16,185,129,0.35);"
                             onmouseover="this.style.background='rgba(16,185,129,0.4)'"
                             onmouseout="this.style.background='rgba(16,185,129,0.25)'">
@@ -1097,37 +1093,34 @@
 
                 <!-- App Governance -->
                 <div onclick="launchAppGovernance()"
-                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-violet-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-violet-950/40 flex flex-col">
-                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-violet-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-violet-950/40 flex flex-col col-span-1 relative">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
                         style="background: linear-gradient(145deg, #2e1065 0%, #1a0a3d 100%);">
                         <div class="absolute inset-0 opacity-10"
                             style="background-image: radial-gradient(circle, #a78bfa 1px, transparent 1px); background-size: 20px 20px;">
                         </div>
-                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
                             style="background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.3);">
-                            <i data-lucide="layout-grid" class="w-8 h-8 text-violet-300"></i>
+                            <i data-lucide="layout-grid" class="w-6 h-6 text-violet-300"></i>
                         </div>
                     </div>
-                    <div class="p-6 flex flex-col gap-3 flex-1">
+                    <div class="p-5 flex flex-col gap-2 flex-1">
                         <div>
-                            <h3 class="text-lg font-bold text-white">App Governance</h3>
-                            <p class="text-xs text-violet-400 font-medium mt-0.5">Enterprise Application Visibility</p>
+                            <h3 class="text-base font-bold text-white leading-tight">App Governance</h3>
+                            <p class="text-[10px] text-violet-400 font-medium mt-0.5 uppercase tracking-wider">
+                                Enterprise Apps</p>
                         </div>
-                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Review all enterprise apps, resolve
-                            group memberships, audit SSO coverage, and identify access risks across your directory.</p>
-                        <div class="flex flex-wrap gap-1.5">
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Review enterprise apps,
+                            resolve group memberships, audit SSO coverage, and identify access risks.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
                             <span
-                                class="text-xs bg-violet-950/60 text-violet-300 border border-violet-900/60 px-2 py-0.5 rounded-md">App
-                                Inventory</span>
-                            <span
-                                class="text-xs bg-violet-950/60 text-violet-300 border border-violet-900/60 px-2 py-0.5 rounded-md">SSO
+                                class="text-[10px] bg-violet-950/60 text-violet-300 border border-violet-900/60 px-1.5 py-0.5 rounded">SSO
                                 Coverage</span>
                             <span
-                                class="text-xs bg-violet-950/60 text-violet-300 border border-violet-900/60 px-2 py-0.5 rounded-md">Audit
-                                Groups</span>
+                                class="text-[10px] bg-violet-950/60 text-violet-300 border border-violet-900/60 px-1.5 py-0.5 rounded">Risk</span>
                         </div>
                         <button
-                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
                             style="background: rgba(139,92,246,0.25); border: 1px solid rgba(139,92,246,0.35);"
                             onmouseover="this.style.background='rgba(139,92,246,0.4)'"
                             onmouseout="this.style.background='rgba(139,92,246,0.25)'">
@@ -1138,37 +1131,33 @@
 
                 <!-- Device Governance -->
                 <div onclick="launchDeviceGovernance()"
-                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-cyan-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-950/40 flex flex-col">
-                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-cyan-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-cyan-950/40 flex flex-col col-span-1 relative">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
                         style="background: linear-gradient(145deg, #0a2540 0%, #051525 100%);">
                         <div class="absolute inset-0 opacity-10"
                             style="background-image: radial-gradient(circle, #67e8f9 1px, transparent 1px); background-size: 20px 20px;">
                         </div>
-                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
                             style="background: rgba(6,182,212,0.2); border: 1px solid rgba(6,182,212,0.3);">
-                            <i data-lucide="monitor-smartphone" class="w-8 h-8 text-cyan-300"></i>
+                            <i data-lucide="monitor-smartphone" class="w-6 h-6 text-cyan-300"></i>
                         </div>
                     </div>
-                    <div class="p-6 flex flex-col gap-3 flex-1">
+                    <div class="p-5 flex flex-col gap-2 flex-1">
                         <div>
-                            <h3 class="text-lg font-bold text-white">Device Governance</h3>
-                            <p class="text-xs text-cyan-400 font-medium mt-0.5">Endpoint Compliance &amp; Security</p>
+                            <h3 class="text-base font-bold text-white leading-tight">Device Governance</h3>
+                            <p class="text-[10px] text-cyan-400 font-medium mt-0.5 uppercase tracking-wider">Endpoints
+                            </p>
                         </div>
-                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Monitor Intune-managed device
-                            compliance, identify BitLocker gaps, and track Defender health across your organisation's
-                            endpoints.</p>
-                        <div class="flex flex-wrap gap-1.5">
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Monitor Intune-managed
+                            device compliance, identify BitLocker gaps, and track Defender health.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
                             <span
-                                class="text-xs bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-2 py-0.5 rounded-md">Intune
-                                Inventory</span>
+                                class="text-[10px] bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-1.5 py-0.5 rounded">BitLocker</span>
                             <span
-                                class="text-xs bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-2 py-0.5 rounded-md">BitLocker</span>
-                            <span
-                                class="text-xs bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-2 py-0.5 rounded-md">Defender
-                                Health</span>
+                                class="text-[10px] bg-cyan-950/60 text-cyan-300 border border-cyan-900/60 px-1.5 py-0.5 rounded">Defender</span>
                         </div>
                         <button
-                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
                             style="background: rgba(6,182,212,0.25); border: 1px solid rgba(6,182,212,0.35);"
                             onmouseover="this.style.background='rgba(6,182,212,0.4)'"
                             onmouseout="this.style.background='rgba(6,182,212,0.25)'">
@@ -1179,35 +1168,33 @@
 
                 <!-- Teams Governance -->
                 <div onclick="launchTeamsGovernance()"
-                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-blue-950/40 flex flex-col">
-                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-blue-950/40 flex flex-col col-span-1 relative">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
                         style="background: linear-gradient(145deg, #1e3a8a 0%, #172554 100%);">
                         <div class="absolute inset-0 opacity-10"
                             style="background-image: radial-gradient(circle, #93c5fd 1px, transparent 1px); background-size: 20px 20px;">
                         </div>
-                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
                             style="background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.3);">
-                            <i data-lucide="users" class="w-8 h-8 text-blue-300"></i>
+                            <i data-lucide="users" class="w-6 h-6 text-blue-300"></i>
                         </div>
                     </div>
-                    <div class="p-6 flex flex-col gap-3 flex-1">
+                    <div class="p-5 flex flex-col gap-2 flex-1">
                         <div>
-                            <h3 class="text-lg font-bold text-white">Teams Governance</h3>
-                            <p class="text-xs text-blue-400 font-medium mt-0.5">Workspace Monitoring & Creation</p>
+                            <h3 class="text-base font-bold text-white leading-tight">Teams Governance</h3>
+                            <p class="text-[10px] text-blue-400 font-medium mt-0.5 uppercase tracking-wider">Workspaces
+                            </p>
                         </div>
-                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Monitor all Microsoft Teams, track
-                            external members, manage ownerless teams, and provision new workspaces from templates.</p>
-                        <div class="flex flex-wrap gap-1.5">
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Monitor Teams, track
+                            external members, manage ownerless teams, and provision templates.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
                             <span
-                                class="text-xs bg-blue-950/60 text-blue-300 border border-blue-900/60 px-2 py-0.5 rounded-md">External
-                                Access</span>
+                                class="text-[10px] bg-blue-950/60 text-blue-300 border border-blue-900/60 px-1.5 py-0.5 rounded">Templates</span>
                             <span
-                                class="text-xs bg-blue-950/60 text-blue-300 border border-blue-900/60 px-2 py-0.5 rounded-md">Ownerless</span>
-                            <span
-                                class="text-xs bg-blue-950/60 text-blue-300 border border-blue-900/60 px-2 py-0.5 rounded-md">Templates</span>
+                                class="text-[10px] bg-blue-950/60 text-blue-300 border border-blue-900/60 px-1.5 py-0.5 rounded">Ownerless</span>
                         </div>
                         <button
-                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
                             style="background: rgba(59,130,246,0.25); border: 1px solid rgba(59,130,246,0.35);"
                             onmouseover="this.style.background='rgba(59,130,246,0.4)'"
                             onmouseout="this.style.background='rgba(59,130,246,0.25)'">
@@ -1218,37 +1205,34 @@
 
                 <!-- Security Governance -->
                 <div onclick="launchSecurityGovernance()"
-                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-red-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-red-950/40 flex flex-col">
-                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-red-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-red-950/40 flex flex-col col-span-1 relative">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
                         style="background: linear-gradient(145deg, #450a0a 0%, #1e0505 100%);">
                         <div class="absolute inset-0 opacity-10"
                             style="background-image: radial-gradient(circle, #ef4444 1px, transparent 1px); background-size: 20px 20px;">
                         </div>
-                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
                             style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3);">
-                            <i data-lucide="shield-alert" class="w-8 h-8 text-red-400"></i>
+                            <i data-lucide="shield-alert" class="w-6 h-6 text-red-400"></i>
                         </div>
                     </div>
-                    <div class="p-6 flex flex-col gap-3 flex-1">
+                    <div class="p-5 flex flex-col gap-2 flex-1">
                         <div>
-                            <h3 class="text-lg font-bold text-white">Security Governance</h3>
-                            <p class="text-xs text-red-400 font-medium mt-0.5">Privileged Access & Risk</p>
+                            <h3 class="text-base font-bold text-white leading-tight">Security Governance</h3>
+                            <p class="text-[10px] text-red-400 font-medium mt-0.5 uppercase tracking-wider">Access Risk
+                            </p>
                         </div>
-                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Audit directory roles, monitor Global
-                            Admin sprawl, and review third-party app consent grants to mitigate tenant risk.</p>
-                        <div class="flex flex-wrap gap-1.5">
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Audit directory roles,
+                            monitor Global Admin sprawl, and review third-party app consent.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
                             <span
-                                class="text-xs bg-red-950/60 text-red-300 border border-red-900/60 px-2 py-0.5 rounded-md">Admin
-                                Audit</span>
-                            <span
-                                class="text-xs bg-red-950/60 text-red-300 border border-red-900/60 px-2 py-0.5 rounded-md">OAuth
-                                Risk</span>
-                            <span
-                                class="text-xs bg-red-950/60 text-red-300 border border-red-900/60 px-2 py-0.5 rounded-md">Global
+                                class="text-[10px] bg-red-950/60 text-red-300 border border-red-900/60 px-1.5 py-0.5 rounded">Global
                                 Admins</span>
+                            <span
+                                class="text-[10px] bg-red-950/60 text-red-300 border border-red-900/60 px-1.5 py-0.5 rounded">OAuth</span>
                         </div>
                         <button
-                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
                             style="background: rgba(239,68,68,0.25); border: 1px solid rgba(239,68,68,0.35);"
                             onmouseover="this.style.background='rgba(239,68,68,0.4)'"
                             onmouseout="this.style.background='rgba(239,68,68,0.25)'">
@@ -1259,43 +1243,109 @@
 
                 <!-- Identity Governance -->
                 <div onclick="launchIdentityGovernance()"
-                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-950/40 flex flex-col">
-                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-950/40 flex flex-col col-span-1 relative">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
                         style="background: linear-gradient(145deg, #1e1b4b 0%, #0f0e2b 100%);">
                         <div class="absolute inset-0 opacity-10"
                             style="background-image: radial-gradient(circle, #818cf8 1px, transparent 1px); background-size: 20px 20px;">
                         </div>
-                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
                             style="background: rgba(79,70,229,0.2); border: 1px solid rgba(79,70,229,0.3);">
-                            <i data-lucide="fingerprint" class="w-8 h-8 text-indigo-300"></i>
+                            <i data-lucide="fingerprint" class="w-6 h-6 text-indigo-300"></i>
                         </div>
                     </div>
-                    <div class="p-6 flex flex-col gap-3 flex-1">
+                    <div class="p-5 flex flex-col gap-2 flex-1">
                         <div>
-                            <h3 class="text-lg font-bold text-white">Identity Governance</h3>
-                            <p class="text-xs text-indigo-400 font-medium mt-0.5">Secure Identity &amp; MFA Posture</p>
+                            <h3 class="text-base font-bold text-white leading-tight">Identity Governance</h3>
+                            <p class="text-[10px] text-indigo-400 font-medium mt-0.5 uppercase tracking-wider">MFA &
+                                Posture</p>
                         </div>
-                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Audit MFA strength, track legacy
-                            authentication usage, monitor risky users, and review conditional access policies across
-                            your tenant.</p>
-                        <div class="flex flex-wrap gap-1.5">
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Audit MFA strength, track
+                            legacy authentication usage, and review CA policies.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
                             <span
-                                class="text-xs bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-2 py-0.5 rounded-md">MFA
-                                Analysis</span>
+                                class="text-[10px] bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-1.5 py-0.5 rounded">Security
+                                Defaults</span>
                             <span
-                                class="text-xs bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-2 py-0.5 rounded-md">Risky
-                                Users</span>
-                            <span
-                                class="text-xs bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-2 py-0.5 rounded-md">CA
-                                Policies</span>
+                                class="text-[10px] bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-1.5 py-0.5 rounded">App
+                                Passwords</span>
                         </div>
                         <button
-                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
                             style="background: rgba(79,70,229,0.25); border: 1px solid rgba(79,70,229,0.35);"
                             onmouseover="this.style.background='rgba(79,70,229,0.4)'"
                             onmouseout="this.style.background='rgba(79,70,229,0.25)'">
                             Open Module →
                         </button>
+                    </div>
+                </div>
+
+                <!-- SOC2 Governance -->
+                <div onclick="launchSoc2Governance()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-amber-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-amber-950/40 flex flex-col col-span-1 relative">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #78350f 0%, #451a03 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #fbbf24 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
+                            style="background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.3);">
+                            <i data-lucide="clipboard-check" class="w-6 h-6 text-amber-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col gap-2 flex-1">
+                        <div>
+                            <h3 class="text-base font-bold text-white leading-tight">SOC2 Audits</h3>
+                            <p class="text-[10px] text-amber-400 font-medium mt-0.5 uppercase tracking-wider">Compliance
+                                Reports</p>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Generate targeted CSV
+                            reports for typical SOC2 controls including access reviews and MFA coverage.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <span
+                                class="text-[10px] bg-amber-950/60 text-amber-300 border border-amber-900/60 px-1.5 py-0.5 rounded">Access
+                                Review</span>
+                            <span
+                                class="text-[10px] bg-amber-950/60 text-amber-300 border border-amber-900/60 px-1.5 py-0.5 rounded">Evidence</span>
+                        </div>
+                        <button
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
+                            style="background: rgba(245,158,11,0.25); border: 1px solid rgba(245,158,11,0.35);"
+                            onmouseover="this.style.background='rgba(245,158,11,0.4)'"
+                            onmouseout="this.style.background='rgba(245,158,11,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bento Info Widget - Cell 8 -->
+                <div
+                    class="bg-surface-800/50 border border-surface-700/50 border-dashed rounded-2xl flex flex-col col-span-1 min-h-[220px] p-5 justify-between relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 text-surface-700/20">
+                        <i data-lucide="compass" class="w-40 h-40"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white mb-1"><i data-lucide="zap"
+                                class="w-4 h-4 inline-block text-emerald-400 mb-0.5 mr-1"></i>Platform Status</h3>
+                        <p class="text-xs text-slate-400">All 7 modules operational.</p>
+                    </div>
+                    <div class="space-y-3 relative z-10">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-500">API Connection</span>
+                            <span class="text-emerald-400 font-medium flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Connected
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs border-t border-surface-700/50 pt-3">
+                            <span class="text-slate-500">Local Cache Data</span>
+                            <span class="text-slate-300 font-medium">8.4 MB</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs border-t border-surface-700/50 pt-3">
+                            <span class="text-slate-500">Tenant Target</span>
+                            <span class="text-slate-300 font-medium max-w-[120px] truncate"
+                                id="hub-widget-tenant-name">contoso.com</span>
+                        </div>
                     </div>
                 </div>
 
@@ -2591,6 +2641,110 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: SOC2 Governance                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-soc2gov" class="hidden fixed inset-0 flex h-screen overflow-hidden text-white bg-surface-950">
+        <!-- Sidebar -->
+        <aside class="w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+            <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-700 flex items-center justify-center shrink-0">
+                    <i data-lucide="clipboard-check" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <span class="text-white font-bold text-base leading-none block">SOC2 Audits</span>
+                    <span class="text-slate-500 text-xs">Compliance Reports</span>
+                </div>
+            </div>
+            <!-- Back to hub -->
+            <button onclick="soc2ExitModule()"
+                class="mx-3 mt-3 flex items-center gap-2 text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-surface-800 transition">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Hub
+            </button>
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <button class="nav-item active soc2gov-nav-item" data-page="soc2-overview"><i
+                        data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span></button>
+                <button class="nav-item soc2gov-nav-item" data-page="soc2-reports"><i data-lucide="file-text"
+                        class="w-4 h-4 shrink-0"></i><span>Report Generator</span></button>
+            </nav>
+            <div class="px-3 pb-4 border-t border-surface-800 pt-3">
+                <button onclick="soc2LoadGraphData()" class="nav-item"><i data-lucide="refresh-cw"
+                        class="w-4 h-4 shrink-0"></i><span>Refresh Data</span></button>
+            </div>
+            <div class="px-6 py-4 mt-auto border-t border-surface-800">
+                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Created By</p>
+                <p class="text-xs font-bold text-white">Thomas Robb</p>
+                <p class="text-[10px] text-slate-500">Solutions Engineer</p>
+                <p class="text-[10px] text-slate-600 mt-2">© 2026 M365 Compass</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden bg-surface-950">
+            <header
+                class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex flex-col md:flex-row items-center gap-4 shrink-0 justify-between">
+                <div class="flex-1">
+                    <h1 id="soc2gov-page-title" class="text-lg font-bold text-white">SOC2 Compliance Overview</h1>
+                    <p id="soc2gov-page-subtitle" class="text-xs text-slate-400">High-level audit readiness</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openSettings()"
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-slate-400 hover:text-white hover:bg-surface-700 transition"
+                        title="Privacy & Cache Settings">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                        <span class="text-xs font-bold uppercase tracking-wider">Compass Security</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Loading Overlay -->
+            <div id="soc2gov-loading-overlay"
+                class="flex-1 flex items-center justify-center hidden z-50 fixed inset-0 bg-surface-950/80 backdrop-blur-sm">
+                <div
+                    class="w-full max-w-sm px-6 text-center bg-surface-900 border border-surface-800 rounded-2xl p-8 shadow-2xl">
+                    <div class="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="clipboard-check" class="w-8 h-8 text-amber-400 animate-pulse"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2" id="soc2gov-loading-title">Aggregating Audit Data</h3>
+                    <p class="text-slate-500 text-xs mb-5" id="soc2gov-loading-sub-text">Fetching from Azure AD and
+                        Intune</p>
+                    <div class="bg-surface-800 rounded-full h-2 overflow-hidden mb-3">
+                        <div id="soc2gov-progress-bar" class="h-full bg-amber-500 transition-all duration-300"
+                            style="width: 0%"></div>
+                    </div>
+                    <p class="text-slate-500 text-xs" id="soc2gov-progress-pct">0%</p>
+                </div>
+            </div>
+
+            <main id="soc2gov-pages" class="flex-1 overflow-y-auto">
+                <section id="page-soc2-overview" class="soc2gov-page-section p-6 space-y-6">
+                    <!-- Overview injected here -->
+                </section>
+                <section id="page-soc2-reports" class="soc2gov-page-section p-6 space-y-6 hidden">
+                    <!-- Reports injected here via render/template logic if desired, or static HTML here -->
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h3 class="section-title"><i data-lucide="file-text" class="w-4 h-4 text-amber-400"></i>
+                                Generate Custom Reports</h3>
+                        </div>
+                        <div class="p-4 border-b border-surface-800 flex items-center gap-4">
+                            <select id="soc2-department-filter"
+                                class="input-field bg-surface-950 text-slate-300 text-sm py-1.5 min-w-[200px]">
+                                <option value="all">All Departments</option>
+                            </select>
+                            <span class="text-xs text-slate-500">Filters apply to user-centric reports like MFA or
+                                Inactive Accounts.</span>
+                        </div>
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                            id="soc2-reports-container">
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
     <!-- Team Details Modal -->
     <div id="tg-details-modal"
         class="fixed inset-0 z-[8500] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden animate-fade-in">
@@ -2820,6 +2974,12 @@
     <script src="js/identitygov/graph.js"></script>
     <script src="js/identitygov/demo.js"></script>
     <script src="js/identitygov/ui.js"></script>
+
+    <script src="js/soc2gov/graph.js"></script>
+    <script src="js/soc2gov/demo.js"></script>
+    <script src="js/soc2gov/ui.js"></script>
+    <script src="js/soc2gov/pages/overview.js"></script>
+    <script src="js/soc2gov/pages/reports.js"></script>
 
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
