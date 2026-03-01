@@ -71,15 +71,32 @@ async function tgLoadGraphData(forceRefresh = false) {
         let activityMap = new Map();
         try {
             tgUpdateLoading(15, "Fetching Team Activity report...");
-            const activityUrl = "https://graph.microsoft.com/v1.0/reports/getTeamsTeamActivityDetail(period='D180')?$format=application/json";
-            let actData = await graphFetch(activityUrl);
-            if (actData && actData.value) {
-                console.log("Teams Activity Report first item sample:", actData.value[0]);
-                actData.value.forEach(a => {
-                    if (a.teamId && a.lastActivityDate) {
-                        activityMap.set(a.teamId, a.lastActivityDate);
+            const activityUrl = "https://graph.microsoft.com/v1.0/reports/getTeamsTeamActivityDetail(period='D180')";
+            let actCsv = await graphFetch(activityUrl, { responseType: 'text' });
+
+            if (actCsv) {
+                const lines = actCsv.split('\n').filter(l => l.trim().length > 0);
+                if (lines.length > 0) {
+                    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                    const pTeamId = headers.indexOf('Team Id');
+                    const pLastAct = headers.indexOf('Last Activity Date');
+
+                    if (pTeamId > -1 && pLastAct > -1) {
+                        for (let i = 1; i < lines.length; i++) {
+                            // Split by comma ignoring commas inside quotes
+                            const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/"/g, ''));
+                            const tId = cols[pTeamId];
+                            const tDate = cols[pLastAct];
+
+                            // Only set if not empty string
+                            if (tId && tDate) {
+                                activityMap.set(tId, tDate);
+                            }
+                        }
+                    } else {
+                        console.warn("Could not find 'Team Id' or 'Last Activity Date' in CSV headers:", headers);
                     }
-                });
+                }
             }
         } catch (e) {
             console.warn("Could not fetch Teams activity report (Activity dates unavailable). Error details:", e);

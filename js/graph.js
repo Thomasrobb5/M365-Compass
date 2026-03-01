@@ -243,6 +243,11 @@ async function graphFetch(url, opts = {}) {
     try { const err = await res.json(); msg = err.error?.message || msg; } catch { }
     throw new Error(msg);
   }
+
+  if (opts.responseType === 'text') {
+    return res.text();
+  }
+
   return res.json();
 }
 
