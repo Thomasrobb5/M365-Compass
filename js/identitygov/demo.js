@@ -2,7 +2,7 @@
  * identitygov/demo.js – Sample data for Identity Governance
  */
 
-function idgLoadDemoData() {
+async function idgLoadDemoData() {
     console.log("Loading Identity Governance Demo Data...");
 
     // Sample Departments
@@ -123,6 +123,8 @@ function idgLoadDemoData() {
 
     IDG.data.lastSync = new Date();
     IDG.isDemoMode = true;
+
+    if (typeof saveIdgCache === 'function') await saveIdgCache();
 
     console.log("Identity Governance Demo Data loaded:", IDG.data.users.length, "users");
 }

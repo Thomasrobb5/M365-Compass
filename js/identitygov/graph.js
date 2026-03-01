@@ -55,7 +55,7 @@ async function idgLoadGraphData() {
         idgSetProgress(5);
 
         if (LG.isDemoMode) {
-            idgLoadDemoData();
+            await idgLoadDemoData();
             idgSetProgress(100);
             idgShowLoading(false);
             return;

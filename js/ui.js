@@ -130,9 +130,16 @@ async function launchIdentityGovernance() {
 
     if (!IDG.data.users.length) {
         if (LG.isDemoMode) {
-            idgLoadDemoData();
+            await idgLoadDemoData();
         } else {
             await idgLoadGraphData();
+        }
+    } else if (hasCache && !IDG.isDemoMode) {
+        if (IDG.data.lastSync) {
+            const mins = Math.round((Date.now() - IDG.data.lastSync.getTime()) / 60000);
+            showToast(`Using cached identity data (${mins < 60 ? mins + 'm' : Math.round(mins / 60) + 'h'} old) — click Refresh to update`, 'info', 6000);
+        } else {
+            showToast('Using cached identity data — click Refresh to update', 'info', 6000);
         }
     }
 
