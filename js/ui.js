@@ -47,6 +47,8 @@ function showHub() {
     document.getElementById('view-hub').classList.remove('hidden');
     document.getElementById('view-licence').classList.add('hidden');
     document.getElementById('view-appgov').classList.add('hidden');
+    document.getElementById('view-devicegov').classList.add('hidden');
+    document.getElementById('view-teamsgov').classList.add('hidden');
 
     // Update hub user info
     const hubUser = document.getElementById('hub-user-info');
@@ -128,6 +130,7 @@ function backToHub() {
     document.getElementById('view-licence').classList.add('hidden');
     document.getElementById('view-appgov').classList.add('hidden');
     document.getElementById('view-devicegov').classList.add('hidden');
+    document.getElementById('view-teamsgov').classList.add('hidden');
     document.getElementById('view-hub').classList.remove('hidden');
     // Refresh org/user info in hub header
     const hubOrg = document.getElementById('hub-org-name');
