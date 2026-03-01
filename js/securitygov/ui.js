@@ -49,6 +49,17 @@ function initSecUI() {
     document.getElementById('securitygov-refresh-btn')?.addEventListener('click', () => {
         secRefreshData(true);
     });
+
+    // Search Filtering
+    document.getElementById('sec-admins-search')?.addEventListener('input', (e) => {
+        secRenderAdminRoles(e.target.value);
+    });
+    document.getElementById('sec-globaladmins-search')?.addEventListener('input', (e) => {
+        secRenderGlobalAdmins(e.target.value);
+    });
+    document.getElementById('sec-consent-search')?.addEventListener('input', (e) => {
+        secRenderConsentGrants(e.target.value);
+    });
 }
 
 function secNavigateTo(pageId) {
@@ -74,6 +85,9 @@ function secNavigateTo(pageId) {
     } else if (pageId === 'securitygov-admins') {
         titleEl.textContent = 'Admin Role Audit';
         subtitleEl.textContent = 'Auditing privileged directory roles and members';
+    } else if (pageId === 'securitygov-globaladmins') {
+        titleEl.textContent = 'Global Administrators';
+        subtitleEl.textContent = 'Critical privileged access that can manage the entire tenant';
     } else if (pageId === 'securitygov-consent') {
         titleEl.textContent = 'User Consent Grants';
         subtitleEl.textContent = 'Third-party apps with delegated access to tenant data';
@@ -134,6 +148,8 @@ function renderSecPage(pageId) {
         if (typeof secRenderOverview === 'function') secRenderOverview();
     } else if (pageId === 'securitygov-admins') {
         if (typeof secRenderAdminRoles === 'function') secRenderAdminRoles();
+    } else if (pageId === 'securitygov-globaladmins') {
+        if (typeof secRenderGlobalAdmins === 'function') secRenderGlobalAdmins();
     } else if (pageId === 'securitygov-consent') {
         if (typeof secRenderConsentGrants === 'function') secRenderConsentGrants();
     }

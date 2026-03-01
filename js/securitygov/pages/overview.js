@@ -56,18 +56,26 @@ function renderSecCharts() {
     }
 }
 
-function secRenderAdminRoles() {
+function secRenderAdminRoles(filter = '') {
     const tbody = document.getElementById('sec-admins-tbody');
     tbody.innerHTML = '';
+    const q = filter.toLowerCase();
 
     SEC.data.roles.forEach(role => {
         if (!role.members || role.members.length === 0) return;
 
         role.members.forEach(member => {
-            const tr = document.createElement('tr');
             const isExternal = member.userPrincipalName?.includes('#EXT#');
             const isGlobal = role.displayName === "Global Administrator";
 
+            // Filter logic
+            if (q && !role.displayName.toLowerCase().includes(q) &&
+                !member.displayName.toLowerCase().includes(q) &&
+                !member.userPrincipalName.toLowerCase().includes(q)) {
+                return;
+            }
+
+            const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="font-bold text-white">${role.displayName}</td>
                 <td>
@@ -95,13 +103,65 @@ function secRenderAdminRoles() {
     });
 }
 
-function secRenderConsentGrants() {
+function secRenderGlobalAdmins(filter = '') {
+    const tbody = document.getElementById('sec-globaladmins-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const q = filter.toLowerCase();
+
+    const gaRole = SEC.data.roles.find(r => r.displayName === "Global Administrator");
+    if (!gaRole || !gaRole.members) return;
+
+    gaRole.members.forEach(member => {
+        const isExternal = member.userPrincipalName?.includes('#EXT#');
+
+        // Filter logic
+        if (q && !member.displayName.toLowerCase().includes(q) &&
+            !member.userPrincipalName.toLowerCase().includes(q)) {
+            return;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full bg-red-900/40 flex items-center justify-center text-[10px] text-red-400 font-bold border border-red-500/30">
+                        ${member.displayName?.charAt(0) || 'U'}
+                    </div>
+                    <span class="font-bold text-white">${member.displayName}</span>
+                </div>
+            </td>
+            <td class="text-xs text-slate-400">${member.userPrincipalName}</td>
+            <td>
+                <span class="px-2 py-0.5 rounded text-[10px] ${isExternal ? 'bg-amber-900/40 text-amber-400' : 'bg-blue-900/40 text-blue-400'}">
+                    ${isExternal ? 'Guest / External' : 'Internal'}
+                </span>
+            </td>
+            <td class="text-center">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-900/50 text-red-400 animate-pulse">
+                    CRITICAL
+                </span>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function secRenderConsentGrants(filter = '') {
     const tbody = document.getElementById('sec-consent-tbody');
     tbody.innerHTML = '';
+    const q = filter.toLowerCase();
 
     SEC.data.grants.forEach(g => {
-        const tr = document.createElement('tr');
         const scope = g.scope.toLowerCase();
+        const appName = (g.displayName || 'Unknown App').toLowerCase();
+
+        // Filter logic
+        if (q && !appName.includes(q) && !scope.includes(q) && !g.clientId.toLowerCase().includes(q)) {
+            return;
+        }
+
+        const tr = document.createElement('tr');
         let risk = 'Low';
         let riskClass = 'bg-surface-800 text-slate-400';
 
@@ -146,6 +206,25 @@ function secExportAdminCsv() {
 
     if (typeof exportToCsv === 'function') {
         exportToCsv("M365Compass_AdminRoles.csv", [headers, ...rows]);
+    }
+}
+
+function secExportGlobalAdminCsv() {
+    const headers = ["Name", "UPN", "Type", "Severity"];
+    const rows = [];
+    const gaRole = SEC.data.roles.find(r => r.displayName === "Global Administrator");
+
+    gaRole?.members?.forEach(m => {
+        rows.push([
+            m.displayName,
+            m.userPrincipalName,
+            m.userPrincipalName.includes('#EXT#') ? 'External' : 'Internal',
+            'CRITICAL'
+        ]);
+    });
+
+    if (typeof exportToCsv === 'function') {
+        exportToCsv("M365Compass_GlobalAdmins.csv", [headers, ...rows]);
     }
 }
 

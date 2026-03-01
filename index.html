@@ -1554,6 +1554,9 @@
                     <button class="sec-nav-item nav-item" data-secpage="securitygov-admins">
                         <i data-lucide="user-cog" class="w-4 h-4 shrink-0"></i><span>Admin Roles</span>
                     </button>
+                    <button class="sec-nav-item nav-item" data-secpage="securitygov-globaladmins">
+                        <i data-lucide="shield-check" class="w-4 h-4 shrink-0"></i><span>Global Admins</span>
+                    </button>
                     <button class="sec-nav-item nav-item" data-secpage="securitygov-consent">
                         <i data-lucide="key" class="w-4 h-4 shrink-0"></i><span>Consent Grants</span>
                     </button>
@@ -1651,8 +1654,17 @@
                     <!-- Tab: Admin Roles -->
                     <div id="securitygov-admins" class="sec-page p-6 hidden">
                         <div class="content-card">
-                            <div class="content-card-header justify-between">
-                                <h3 class="section-title">Directory Role Inventory</h3>
+                            <div class="content-card-header justify-between flex-wrap gap-4">
+                                <div class="flex items-center gap-4 flex-1 min-w-[300px]">
+                                    <h3 class="section-title whitespace-nowrap">Directory Role Inventory</h3>
+                                    <div class="relative flex-1 max-w-sm">
+                                        <i data-lucide="search"
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                                        <input type="text" id="sec-admins-search"
+                                            placeholder="Filter by user or role..."
+                                            class="w-full bg-surface-950 border border-surface-800 rounded-lg py-1.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-red-500/50 transition">
+                                    </div>
+                                </div>
                                 <button onclick="secExportAdminCsv()" class="btn-secondary btn-sm"><i
                                         data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
                             </div>
@@ -1673,11 +1685,56 @@
                         </div>
                     </div>
 
+                    <!-- Tab: Global Admins -->
+                    <div id="securitygov-globaladmins" class="sec-page p-6 hidden">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="content-card">
+                                <div class="content-card-header justify-between flex-wrap gap-4">
+                                    <div class="flex items-center gap-4 flex-1 min-w-[300px]">
+                                        <h3 class="section-title whitespace-nowrap text-red-400">Critical: Global
+                                            Administrators</h3>
+                                        <div class="relative flex-1 max-w-sm">
+                                            <i data-lucide="search"
+                                                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                                            <input type="text" id="sec-globaladmins-search"
+                                                placeholder="Filter admins..."
+                                                class="w-full bg-surface-950 border border-surface-800 rounded-lg py-1.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-red-500/50 transition">
+                                        </div>
+                                    </div>
+                                    <button onclick="secExportGlobalAdminCsv()" class="btn-secondary btn-sm"><i
+                                            data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
+                                </div>
+                                <div class="table-wrapper">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>UPN</th>
+                                                <th>Type</th>
+                                                <th class="text-center">Severity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sec-globaladmins-tbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Tab: Consent Grants -->
                     <div id="securitygov-consent" class="sec-page p-6 hidden">
                         <div class="content-card">
-                            <div class="content-card-header justify-between">
-                                <h3 class="section-title">User Consent Grants (OAuth)</h3>
+                            <div class="content-card-header justify-between flex-wrap gap-4">
+                                <div class="flex items-center gap-4 flex-1 min-w-[300px]">
+                                    <h3 class="section-title whitespace-nowrap">User Consent Grants (OAuth)</h3>
+                                    <div class="relative flex-1 max-w-sm">
+                                        <i data-lucide="search"
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                                        <input type="text" id="sec-consent-search"
+                                            placeholder="Filter by app or scope..."
+                                            class="w-full bg-surface-950 border border-surface-800 rounded-lg py-1.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-orange-500/50 transition">
+                                    </div>
+                                </div>
                                 <button onclick="secExportConsentCsv()" class="btn-secondary btn-sm"><i
                                         data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
                             </div>

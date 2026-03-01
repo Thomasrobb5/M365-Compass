@@ -476,7 +476,7 @@ window.renderAdminDistributionChart = function (labels, data) {
                     'rgba(6, 182, 212, 0.7)',  // Cyan
                     'rgba(107, 114, 128, 0.7)' // Gray
                 ],
-                borderColor: 'rgba(15, 23, 42, 1)',
+                borderColor: isDark() ? '#0f172a' : '#fff',
                 borderWidth: 2
             }]
         },
@@ -486,7 +486,7 @@ window.renderAdminDistributionChart = function (labels, data) {
             plugins: {
                 legend: {
                     position: 'right',
-                    labels: { color: COLORS.textSecondary, font: { size: 10 }, usePointStyle: true }
+                    labels: { color: isDark() ? '#94a3b8' : '#334155', font: { size: 10 }, usePointStyle: true }
                 }
             },
             cutout: '60%'
@@ -524,12 +524,12 @@ window.renderConsentRiskChart = function (labels, data) {
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: COLORS.textSecondary, stepSize: 1 }
+                    grid: { color: isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                    ticks: { color: isDark() ? '#94a3b8' : '#64748b', stepSize: 1 }
                 },
                 y: {
                     grid: { display: false },
-                    ticks: { color: COLORS.textSecondary }
+                    ticks: { color: isDark() ? '#94a3b8' : '#64748b' }
                 }
             }
         }
