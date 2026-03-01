@@ -161,10 +161,85 @@ function closeConfigModal() {
     document.getElementById('config-modal').classList.add('hidden');
 }
 
+// ── Saved Connections ───────────────────────────────────────────────────
+function getSavedConnections() {
+    try {
+        const saved = localStorage.getItem('lg_saved_connections');
+        return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+}
+
+function saveConnection(config) {
+    const saved = getSavedConnections();
+    // Prevent duplicates (match by tenant + client)
+    const exists = saved.find(c => c.tenantId === config.tenantId && c.clientId === config.clientId);
+    if (!exists) {
+        saved.push({ ...config, id: Date.now() });
+        localStorage.setItem('lg_saved_connections', JSON.stringify(saved));
+        renderSavedConnections();
+    }
+}
+
+function removeSavedConnection(id) {
+    const saved = getSavedConnections().filter(c => c.id !== id);
+    localStorage.setItem('lg_saved_connections', JSON.stringify(saved));
+    renderSavedConnections();
+}
+
+function renderSavedConnections() {
+    const container = document.getElementById('saved-connections-container');
+    const list = document.getElementById('saved-connections-list');
+    const countBadge = document.getElementById('saved-count');
+    const saved = getSavedConnections();
+
+    if (saved.length === 0) {
+        if (container) container.classList.add('hidden');
+        return;
+    }
+
+    if (container) container.classList.remove('hidden');
+    if (countBadge) countBadge.textContent = saved.length;
+    if (list) {
+        list.innerHTML = saved.map(c => `
+            <div class="bg-surface-800 border border-surface-700 hover:border-brand-500/50 rounded-xl p-4 transition-all group cursor-pointer relative" onclick="selectSavedConnection(${c.id})">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500">
+                        <i data-lucide="shield" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-xs font-bold text-white truncate">${c.tenantId}</p>
+                        <p class="text-[10px] text-slate-500 truncate">Client: ${c.clientId.substring(0, 8)}...</p>
+                    </div>
+                    <button onclick="event.stopPropagation(); removeSavedConnection(${c.id})" class="p-1.5 rounded-lg bg-surface-700 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+}
+
+function selectSavedConnection(id) {
+    const saved = getSavedConnections();
+    const config = saved.find(c => c.id === id);
+    if (config) {
+        document.getElementById('cfg-tenant-id').value = config.tenantId;
+        document.getElementById('cfg-client-id').value = config.clientId;
+        document.getElementById('cfg-redirect-uri').value = config.redirectUri || window.location.origin;
+        if (document.getElementById('cfg-blob-url')) {
+            document.getElementById('cfg-blob-url').value = config.blobUrl || '';
+        }
+        openConfigModal(true);
+        showToast('Connection details populated', 'info');
+    }
+}
+
 // ── Bootstrap the app ─────────────────────────────────────────────────────
 async function bootstrapApp() {
     loadRates();
     const cfg = loadConfig();
+    renderSavedConnections();
 
     // Restore inactivity days setting
     const savedDays = localStorage.getItem('lg_inactivity_days');
@@ -205,14 +280,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const clientId = document.getElementById('cfg-client-id').value.trim();
         const redirectUri = document.getElementById('cfg-redirect-uri').value.trim() || window.location.origin;
         const blobUrl = (document.getElementById('cfg-blob-url')?.value || '').trim();
-        const demoMode = document.getElementById('cfg-demo-mode').checked;
+        const demoMode = document.getElementById('cfg-demo-mode')?.checked || false;
+        const shouldSaveConnection = document.getElementById('cfg-save-connection')?.checked || false;
 
         if (!demoMode && (!tenantId || !clientId)) {
             showToast('Tenant ID and Client ID are required (or enable Demo Mode)', 'warning');
             return;
         }
 
-        saveConfig({ tenantId, clientId, redirectUri });
+        const config = { tenantId, clientId, redirectUri, blobUrl };
+        saveConfig(config);
+
+        if (shouldSaveConnection) {
+            saveConnection(config);
+        }
+
         if (typeof agSetBlobUrl === 'function') agSetBlobUrl(blobUrl);
         closeConfigModal();
 
