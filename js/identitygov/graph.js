@@ -51,29 +51,101 @@ async function idgLoadGraphData() {
         idgShowLoading(true, 'Connecting to Azure AD Identity services...');
         idgSetProgress(5);
 
-        // Note: Real implementation would use batching for:
-        // 1. /reports/authenticationMethods/userRegistrationDetails
-        // 2. /identityProtection/riskyUsers
-        // 3. /conditionalAccess/policies
-        // 4. /users with select for department, jobTitle, etc.
-
-        // For now, if we are in demo mode, just load demo data
         if (LG.isDemoMode) {
             idgLoadDemoData();
-        } else {
-            // Placeholder for real Graph API calls as outlined in the implementation plan
-            console.warn("Real Graph API fetching for Identity is not yet implemented.");
-            showToast("Authenticated fetching for Identity is coming soon. Using Demo data for now.", "info");
-            idgLoadDemoData();
-            IDG.isDemoMode = false; // Mark that we tried real auth
+            idgSetProgress(100);
+            idgShowLoading(false);
+            return;
         }
 
+        // 1. Fetch MFA Registration Details
+        idgShowLoading(true, 'Fetching MFA registration status...');
+        let mfaData = [];
+        try {
+            mfaData = await graphFetchAll('https://graph.microsoft.com/v1.0/reports/authenticationMethods/userRegistrationDetails');
+        } catch (e) {
+            console.warn('Failed to fetch MFA details:', e);
+            showToast('Permission denied for MFA reports. Check Reports.Read.All.', 'warning');
+        }
+        idgSetProgress(30);
+
+        // 2. Fetch Risky Users
+        idgShowLoading(true, 'Checking for risky accounts...');
+        let riskData = [];
+        try {
+            riskData = await graphFetchAll('https://graph.microsoft.com/v1.0/identityProtection/riskyUsers');
+        } catch (e) {
+            console.warn('Failed to fetch risky users:', e);
+            showToast('Permission denied for Risk reports. Check IdentityRiskyUser.Read.All.', 'warning');
+        }
+        idgSetProgress(60);
+
+        // 3. Fetch CA Policies
+        idgShowLoading(true, 'Loading Conditional Access policies...');
+        try {
+            const policiesRes = await graphFetch('https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies');
+            IDG.data.policies = policiesRes.value || [];
+        } catch (e) {
+            console.warn('Failed to fetch CA policies:', e);
+            showToast('Permission denied for CA Policies. Check Policy.Read.All.', 'warning');
+        }
+        idgSetProgress(80);
+
+        // 4. Merge with LG.data.users
+        idgShowLoading(true, 'Finalizing identity analysis...');
+
+        if (!LG.data.users || LG.data.users.length === 0) {
+            // Try to load base user data if missing
+            await loadAllData();
+        }
+
+        const mfaMap = {};
+        mfaData.forEach(m => {
+            if (m.userPrincipalName) mfaMap[m.userPrincipalName.toLowerCase()] = m;
+        });
+
+        const riskMap = {};
+        riskData.forEach(r => {
+            if (r.userPrincipalName) riskMap[r.userPrincipalName.toLowerCase()] = r;
+        });
+
+        IDG.data.users = LG.data.users.map(u => {
+            const upn = u.userPrincipalName?.toLowerCase();
+            const mfa = mfaMap[upn];
+            const risk = riskMap[upn];
+
+            // Determine MFA Status
+            let mfaStatus = 'None';
+            if (mfa) {
+                if (mfa.isMfaRegistered) {
+                    const methods = mfa.methodsRegistered || [];
+                    const strongMethods = ['fido2', 'windowsHelloForBusiness', 'certificateBasedAuthentication'];
+                    const hasStrong = methods.some(m => strongMethods.includes(m));
+                    mfaStatus = hasStrong ? 'Strong' : 'Weak';
+                }
+            }
+
+            return {
+                id: u.id,
+                displayName: u.displayName,
+                userPrincipalName: u.userPrincipalName,
+                department: u.department || 'Unknown',
+                jobTitle: u.jobTitle || 'Standard User',
+                mfaStatus: mfaStatus,
+                riskLevel: (risk && risk.riskLevel) ? (risk.riskLevel.charAt(0).toUpperCase() + risk.riskLevel.slice(1)) : 'None',
+                isPrivileged: (u.jobTitle || '').toLowerCase().includes('admin') || (u.jobTitle || '').toLowerCase().includes('director'),
+                lastSignIn: u._lastSignIn
+            };
+        });
+
+        IDG.data.lastSync = new Date();
+        IDG.isDemoMode = false;
         idgSetProgress(100);
         idgShowLoading(false);
 
         if (typeof idgRenderPage === 'function') idgRenderPage(idgCurrentPage);
         await saveIdgCache();
-
+        showToast(`Synced ${IDG.data.users.length} identity profiles`, 'success');
     } catch (err) {
         console.error('Error fetching Identity Governance data:', err);
         showToast('Failed to load identity data: ' + err.message, 'error');

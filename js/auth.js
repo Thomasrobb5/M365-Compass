@@ -106,8 +106,31 @@ async function doLogin() {
     }
 }
 
+// ── Clear all modules data ────────────────────────────────────────────────
+function clearAllModulesData() {
+    console.log("Clearing all modules in-memory data...");
+    if (window.LG) {
+        LG.data.users = [];
+        LG.data.skus = [];
+        LG.data.org = null;
+    }
+    if (window.AG) {
+        AG.data.apps = [];
+    }
+    if (window.DG) {
+        DG.data.devices = [];
+    }
+    if (window.IDG) {
+        IDG.data.users = [];
+        IDG.data.policies = [];
+        IDG.isDemoMode = false;
+    }
+}
+window.clearAllModulesData = clearAllModulesData;
+
 // ── Sign out ──────────────────────────────────────────────────────────────
 function doSignOut() {
+    clearAllModulesData();
     if (LG.msalInstance && LG.account) {
         LG.msalInstance.logoutRedirect({ account: LG.account });
     } else {
@@ -353,6 +376,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof agSetBlobUrl === 'function') agSetBlobUrl(blobUrl);
         closeConfigModal();
 
+        clearAllModulesData();
+
         if (demoMode) {
             LG.isDemoMode = true;
             AG.isDemoMode = true;
@@ -378,6 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Demo Button
     document.getElementById('demo-btn').addEventListener('click', () => {
+        clearAllModulesData();
         LG.isDemoMode = true;
         AG.isDemoMode = true;
         showHub();

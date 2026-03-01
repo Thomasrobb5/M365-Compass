@@ -73,6 +73,15 @@ async function launchLicenceGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
     document.getElementById('view-licence').classList.remove('hidden');
 
+    // Invalidate demo data if switching to Live mode
+    const isStaleDemo = !LG.isDemoMode && LG.data.users.some(u => u.id && u.id.startsWith('demo-user-'));
+    if (isStaleDemo) {
+        console.log("Clearing stale demo data for License Governance...");
+        LG.data.users = [];
+        LG.data.skus = [];
+        LG.data.org = null;
+    }
+
     if (LG.isDemoMode) {
         if (!LG.data.users.length) loadDemoData();
     } else if (LG.accessToken) {
@@ -103,6 +112,14 @@ async function launchIdentityGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
     document.getElementById('view-identitygov').classList.remove('hidden');
 
+    // Invalidate demo data if switching to Live mode
+    const isStaleDemo = !LG.isDemoMode && IDG.data.users.some(u => u.id && u.id.startsWith('demo-user-'));
+    if (isStaleDemo) {
+        console.log("Clearing stale demo data for Identity Governance...");
+        IDG.data.users = [];
+        IDG.data.policies = [];
+    }
+
     // Load Data
     const hasCache = await loadIdgCache();
     if (!hasCache || !IDG.data.users.length) {
@@ -124,6 +141,13 @@ async function launchAppGovernance() {
     document.getElementById('view-teamsgov').classList.add('hidden');
     document.getElementById('view-securitygov').classList.add('hidden');
     document.getElementById('view-appgov').classList.remove('hidden');
+
+    // Invalidate demo data if switching to Live mode
+    const isStaleDemo = !LG.isDemoMode && AG.data.apps.some(a => a.id && a.id.startsWith('sp-'));
+    if (isStaleDemo) {
+        console.log("Clearing stale demo data for App Governance...");
+        AG.data.apps = [];
+    }
 
     if (LG.isDemoMode) {
         if (!AG.data.apps || !AG.data.apps.length) agLoadDemoData();
@@ -174,6 +198,13 @@ async function launchDeviceGovernance() {
 
     if (typeof dgInitUI === 'function') await dgInitUI();
     if (typeof dgNavigateTo === 'function') dgNavigateTo('devicegov-overview');
+
+    // Invalidate demo data if switching to Live mode
+    const isStaleDemo = !LG.isDemoMode && DG.data.devices.some(d => d.id && d.id.startsWith('dev-'));
+    if (isStaleDemo) {
+        console.log("Clearing stale demo data for Device Governance...");
+        DG.data.devices = [];
+    }
 
     // Auto-load data ONLY if we don't have cached data yet
     if (!DG.data.devices || DG.data.devices.length === 0) {
