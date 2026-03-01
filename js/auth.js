@@ -199,6 +199,8 @@ function renderSavedConnections() {
 
     if (saved.length === 0) {
         if (container) container.classList.add('hidden');
+        if (list) list.innerHTML = '';
+        if (countBadge) countBadge.textContent = '0';
         return;
     }
 
@@ -251,7 +253,7 @@ function renderSavedConnections() {
                 </div>
             </div>
         `).join('');
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     }
 }
 
