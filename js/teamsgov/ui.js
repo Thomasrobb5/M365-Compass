@@ -69,6 +69,7 @@ function showTgPage(pageId) {
     if (pageId === 'teamsgov-overview') tgRenderOverview();
     if (pageId === 'teamsgov-all') tgRenderAllTeams();
     if (pageId === 'teamsgov-orphaned') tgRenderOrphanedTeams();
+    if (pageId === 'teamsgov-guests') tgRenderGuestTeams();
     if (pageId === 'teamsgov-archived') tgRenderArchivedTeams();
 
     tgState.currentPage = pageId;

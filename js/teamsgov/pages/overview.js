@@ -117,6 +117,12 @@ async function tgRenderArchivedTeams() {
     tgRenderTable(window.tgFilteredTeamsArchived, 'tg-teams-archived-tbody');
 }
 
+async function tgRenderGuestTeams() {
+    const teams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
+    window.tgFilteredTeamsGuests = teams.filter(t => t.guests > 0);
+    tgRenderTable(window.tgFilteredTeamsGuests, 'tg-teams-guests-tbody');
+}
+
 function tgFilterTeams(tab) {
     let q = '';
     let source = [];
@@ -127,7 +133,27 @@ function tgFilterTeams(tab) {
 
     if (tab === 'all') {
         q = document.getElementById('tg-search-all').value.toLowerCase();
-        source = allTeams;
+
+        const visFilter = document.getElementById('tg-filter-visibility').value;
+        const tplFilter = document.getElementById('tg-filter-template').value;
+
+        source = allTeams.filter(t => {
+            // Check visibility
+            if (visFilter !== 'all') {
+                if (t.visibility.toLowerCase() !== visFilter) return false;
+            }
+            // Check template prefix
+            if (tplFilter !== 'all') {
+                const name = t.displayName.toUpperCase();
+                if (tplFilter === 'other') {
+                    if (name.startsWith('PRJ-') || name.startsWith('DPT-') || name.startsWith('EXT-')) return false;
+                } else {
+                    if (!name.startsWith(tplFilter + '-')) return false;
+                }
+            }
+            return true;
+        });
+
         stateKey = 'tgFilteredTeamsAll';
         tbodyId = 'tg-teams-all-tbody';
     }
@@ -136,6 +162,12 @@ function tgFilterTeams(tab) {
         source = allTeams.filter(t => t.owners === 0);
         stateKey = 'tgFilteredTeamsOrphaned';
         tbodyId = 'tg-teams-orphaned-tbody';
+    }
+    else if (tab === 'guests') {
+        q = document.getElementById('tg-search-guests').value.toLowerCase();
+        source = allTeams.filter(t => t.guests > 0);
+        stateKey = 'tgFilteredTeamsGuests';
+        tbodyId = 'tg-teams-guests-tbody';
     }
     else if (tab === 'archived') {
         q = document.getElementById('tg-search-archived').value.toLowerCase();
@@ -165,7 +197,7 @@ function tgExportTeamsCsv(tab) {
 
     if (tab === 'all') { dataToExport = window.tgFilteredTeamsAll; filename = 'all-teams-export.csv'; }
     if (tab === 'orphaned') { dataToExport = window.tgFilteredTeamsOrphaned; filename = 'orphaned-teams-export.csv'; }
-    if (tab === 'inactive') { dataToExport = window.tgFilteredTeamsInactive; filename = 'inactive-teams-export.csv'; }
+    if (tab === 'guests') { dataToExport = window.tgFilteredTeamsGuests; filename = 'guest-teams-export.csv'; }
     if (tab === 'archived') { dataToExport = window.tgFilteredTeamsArchived; filename = 'archived-teams-export.csv'; }
 
     exportToCsv(dataToExport, filename, [

@@ -1515,14 +1515,19 @@
                     <button class="tg-nav-item nav-item" data-tgpage="teamsgov-orphaned">
                         <i data-lucide="user-x" class="w-4 h-4 shrink-0"></i><span>Orphaned Teams</span>
                     </button>
+                    <button class="tg-nav-item nav-item" data-tgpage="teamsgov-guests">
+                        <i data-lucide="globe" class="w-4 h-4 shrink-0"></i><span>Teams with Guests</span>
+                    </button>
                     <button class="tg-nav-item nav-item" data-tgpage="teamsgov-archived">
                         <i data-lucide="archive" class="w-4 h-4 shrink-0"></i><span>Archived Teams</span>
                     </button>
                 </nav>
                 <div class="px-3 pb-4 border-t border-surface-800 pt-3 space-y-2">
-                    <button id="teamsgov-refresh-btn" class="nav-item">
+                    <button id="teamsgov-refresh-btn" class="nav-item group relative">
                         <i data-lucide="refresh-cw" class="w-4 h-4 shrink-0"></i><span>Refresh Data</span>
                     </button>
+                    <p class="text-[9px] text-slate-500 leading-tight px-2 pb-2 text-center italic">Tenant data is
+                        cached securely within your browser and is never stored on an external database.</p>
                     <!-- Provide a quick way to launch the create team modal -->
                     <button onclick="tgOpenCreateTeamModal()" class="nav-item text-blue-400 hover:bg-blue-900/20">
                         <i data-lucide="plus-circle" class="w-4 h-4 shrink-0"></i><span>Create Team</span>
@@ -1648,13 +1653,31 @@
                     <section id="teamsgov-all" class="tg-page-section p-6 hidden">
                         <div class="content-card">
                             <div class="content-card-header flex items-center justify-between">
-                                <h3 class="section-title"><i data-lucide="list" class="w-4 h-4 text-blue-400"></i> All
-                                    Teams</h3>
+                                <div>
+                                    <h3 class="section-title"><i data-lucide="list" class="w-4 h-4 text-blue-400"></i>
+                                        All Teams</h3>
+                                    <p class="text-xs text-slate-400 mt-1">A complete directory of all Microsoft Teams
+                                        in your environment.</p>
+                                </div>
                                 <div class="flex items-center gap-2">
+                                    <select id="tg-filter-visibility" class="input-field py-1.5 px-3 text-sm"
+                                        onchange="tgFilterTeams('all')">
+                                        <option value="all">All Visibility</option>
+                                        <option value="public">Public Only</option>
+                                        <option value="private">Private Only</option>
+                                    </select>
+                                    <select id="tg-filter-template" class="input-field py-1.5 px-3 text-sm"
+                                        onchange="tgFilterTeams('all')">
+                                        <option value="all">All Templates</option>
+                                        <option value="PRJ">Project (PRJ)</option>
+                                        <option value="DPT">Department (DPT)</option>
+                                        <option value="EXT">External (EXT)</option>
+                                        <option value="other">Other/Custom</option>
+                                    </select>
                                     <div class="relative"><i data-lucide="search"
                                             class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
                                             id="tg-search-all" type="text" placeholder="Search teams..."
-                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams('all')" />
+                                            class="input-field pl-9 text-sm w-48" oninput="tgFilterTeams('all')" />
                                     </div>
                                     <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv('all')"><i
                                             data-lucide="download" class="w-3.5 h-3.5"></i> CSV</button>
@@ -1681,8 +1704,12 @@
                     <section id="teamsgov-orphaned" class="tg-page-section p-6 hidden">
                         <div class="content-card">
                             <div class="content-card-header flex items-center justify-between">
-                                <h3 class="section-title"><i data-lucide="user-x" class="w-4 h-4 text-amber-400"></i>
-                                    Orphaned Teams</h3>
+                                <div>
+                                    <h3 class="section-title"><i data-lucide="user-x"
+                                            class="w-4 h-4 text-amber-400"></i> Orphaned Teams</h3>
+                                    <p class="text-xs text-slate-400 mt-1">Teams that currently do not have any assigned
+                                        owners.</p>
+                                </div>
                                 <div class="flex items-center gap-2">
                                     <div class="relative"><i data-lucide="search"
                                             class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
@@ -1710,12 +1737,53 @@
                         </div>
                     </section>
 
+                    <!-- Teams with Guests Section -->
+                    <section id="teamsgov-guests" class="tg-page-section p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header flex items-center justify-between">
+                                <div>
+                                    <h3 class="section-title"><i data-lucide="globe"
+                                            class="w-4 h-4 text-emerald-400"></i> Teams with Guests</h3>
+                                    <p class="text-xs text-slate-400 mt-1">External collaboration spaces containing at
+                                        least one guest user.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="relative"><i data-lucide="search"
+                                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
+                                            id="tg-search-guests" type="text" placeholder="Search guest teams..."
+                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams('guests')" />
+                                    </div>
+                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv('guests')"><i
+                                            data-lucide="download" class="w-3.5 h-3.5"></i> CSV</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Team Name</th>
+                                            <th>Visibility</th>
+                                            <th class="text-center">Owners</th>
+                                            <th class="text-center">Guests</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tg-teams-guests-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Archived Teams Section -->
                     <section id="teamsgov-archived" class="tg-page-section p-6 hidden">
                         <div class="content-card">
                             <div class="content-card-header flex items-center justify-between">
-                                <h3 class="section-title"><i data-lucide="archive" class="w-4 h-4 text-rose-400"></i>
-                                    Archived Teams</h3>
+                                <div>
+                                    <h3 class="section-title"><i data-lucide="archive"
+                                            class="w-4 h-4 text-rose-400"></i> Archived Teams</h3>
+                                    <p class="text-xs text-slate-400 mt-1">Teams that have been set to read-only mode by
+                                        an administrator.</p>
+                                </div>
                                 <div class="flex items-center gap-2">
                                     <div class="relative"><i data-lucide="search"
                                             class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
