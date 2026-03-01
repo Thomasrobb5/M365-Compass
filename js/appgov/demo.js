@@ -2,6 +2,14 @@
  * appgov/demo.js – Demo data generator for Enterprise Application Governance
  */
 
+
+function classifySso(mode) {
+    if (!mode || mode === 'notSet') return 'No SSO';
+    if (mode === 'saml') return 'SAML 2.0';
+    if (mode === 'oidc') return 'OpenID Connect';
+    return mode;
+}
+
 function agLoadDemoData() {
     const appTemplates = [
         { name: 'Salesforce', publisher: 'Salesforce.com', sso: 'saml', homepage: 'https://salesforce.com' },

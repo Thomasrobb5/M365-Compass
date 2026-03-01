@@ -100,10 +100,14 @@ window.launchLicenceGovernance = launchLicenceGovernance;
 
 async function launchAppGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
+    document.getElementById('view-licence').classList.add('hidden');
+    document.getElementById('view-devicegov').classList.add('hidden');
+    document.getElementById('view-teamsgov').classList.add('hidden');
+    document.getElementById('view-securitygov').classList.add('hidden');
     document.getElementById('view-appgov').classList.remove('hidden');
 
-    if (AG.isDemoMode) {
-        if (!AG.data.apps.length) agLoadDemoData();
+    if (LG.isDemoMode) {
+        if (!AG.data.apps || !AG.data.apps.length) agLoadDemoData();
     } else if (LG.accessToken) {
         if (!AG.data.apps.length) {
             // Try cache first
@@ -467,3 +471,75 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
 });
 
+// ── Settings & Cache Management ───────────────────────────────────────────
+function openSettings() {
+    const modal = document.getElementById('settings-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    // Reinforce icons within modal
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons({ nodes: [modal] });
+    }
+}
+window.openSettings = openSettings;
+
+function closeSettings() {
+    document.getElementById('settings-modal')?.classList.add('hidden');
+}
+window.closeSettings = closeSettings;
+
+/**
+ * Clears specific portal cache keys
+ * @param {string|string[]} keys 
+ */
+async function clearPortalCache(keys) {
+    const keyList = Array.isArray(keys) ? keys : [keys];
+
+    try {
+        for (const key of keyList) {
+            await localforage.removeItem(key);
+            console.log(`Cleared cache key: ${key}`);
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(`Cache cleared for requested portals`, 'success');
+        }
+    } catch (err) {
+        console.error("Cache clear failed:", err);
+        if (typeof showToast === 'function') {
+            showToast("Failed to clear local cache", "error");
+        }
+    }
+}
+window.clearPortalCache = clearPortalCache;
+
+async function clearAllCache() {
+    const confirmClear = confirm("Are you sure you want to clear ALL cached data? This will remove all local summaries and force a fresh sync on next load.");
+    if (!confirmClear) return;
+
+    try {
+        // Clear all known keys
+        const allKeys = ['lg_data_cache', 'tg_sec_data', 'tg_device_data', 'tg_teams_data', 'tg_app_data', 'lg_rates', 'lg_excluded_skus'];
+        for (const key of allKeys) {
+            await localforage.removeItem(key);
+        }
+
+        // Also clear standard localStorage if used for any small flags
+        localStorage.clear();
+
+        if (typeof showToast === 'function') {
+            showToast("All local cache cleared. Application will refresh.", "success");
+        }
+
+        // Reload the app to clean up in-memory state
+        setTimeout(() => location.reload(), 1500);
+    } catch (err) {
+        console.error("Global cache clear failed:", err);
+    }
+}
+window.clearAllCache = clearAllCache;
+
+// Initialise settings listener if needed (though we use onclick)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSettings();
+});
