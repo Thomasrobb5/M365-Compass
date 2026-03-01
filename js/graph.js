@@ -434,6 +434,7 @@ function loadDemoData() {
   document.getElementById('tenant-name').textContent = 'Contoso Demo Corp';
   document.getElementById('signed-in-user').textContent = 'admin@contoso.com';
   LG.lastRefreshed = new Date();
+  LG.isDemoMode = true;
   updateLastRefreshed();
 }
 window.loadDemoData = loadDemoData;
@@ -449,6 +450,7 @@ window.loadDemoData = loadDemoData;
         users: LG.data.users,
         skus: LG.data.skus,
         org: LG.data.org,
+        isDemoMode: LG.isDemoMode,
       };
       await localforage.setItem(KEY, payload);
     } catch (e) {
@@ -460,9 +462,9 @@ window.loadDemoData = loadDemoData;
       const data = await localforage.getItem(KEY);
       // Invalidate old localStorage bulky structure if it somehow made it into IndexedDB
       if (!data || !data.users || !data.users.length) return null;
-      const { ts, users, skus, org } = data;
+      const { ts, users, skus, org, isDemoMode } = data;
       const age = Date.now() - ts;
-      return { users, skus, org, ageMs: age, fresh: age < TTL, ts };
+      return { users, skus, org, isDemoMode, ageMs: age, fresh: age < TTL, ts };
     } catch (e) {
       console.error('LG IndexedDB cache read failed:', e);
       return null;

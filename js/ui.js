@@ -74,12 +74,13 @@ async function launchLicenceGovernance() {
     document.getElementById('view-licence').classList.remove('hidden');
 
     // Invalidate demo data if switching to Live mode
-    const isStaleDemo = !LG.isDemoMode && LG.data.users.some(u => u.id && u.id.startsWith('demo-user-'));
+    const isStaleDemo = !LG.isDemoMode && (LG.isDemoMode || LG.data.users.some(u => u.id && String(u.id).startsWith('demo-user-')));
     if (isStaleDemo) {
         console.log("Clearing stale demo data for License Governance...");
         LG.data.users = [];
         LG.data.skus = [];
         LG.data.org = null;
+        LG.isDemoMode = false;
     }
 
     if (LG.isDemoMode) {
@@ -88,7 +89,7 @@ async function launchLicenceGovernance() {
         if (!LG.data.users.length) {
             // Try cache first
             const cached = typeof loadLgCache === 'function' ? await loadLgCache() : null;
-            if (cached && cached.fresh) {
+            if (cached && cached.fresh && !cached.isDemoMode) {
                 LG.data.users = cached.users;
                 LG.data.skus = cached.skus;
                 LG.data.org = cached.org;
@@ -98,7 +99,10 @@ async function launchLicenceGovernance() {
                 const mins = Math.round(cached.ageMs / 60000);
                 showToast(`Using cached data (${mins < 60 ? mins + 'm' : Math.round(mins / 60) + 'h'} old) — click Refresh to update`, 'info', 6000);
             } else {
-                if (cached && !cached.fresh) showToast('Cache expired — fetching fresh data', 'info', 3000);
+                if (cached && (cached.isDemoMode || !cached.fresh)) {
+                    if (cached.isDemoMode) console.log("Ignoring stale demo cache for License Governance");
+                    else showToast('Cache expired — fetching fresh data', 'info', 3000);
+                }
                 await loadAllData();
             }
         }
@@ -112,17 +116,19 @@ async function launchIdentityGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
     document.getElementById('view-identitygov').classList.remove('hidden');
 
-    // Invalidate demo data if switching to Live mode
-    const isStaleDemo = !LG.isDemoMode && IDG.data.users.some(u => u.id && u.id.startsWith('demo-user-'));
+    // Load Data
+    const hasCache = await loadIdgCache();
+
+    // Invalidate demo data if switching to Live mode (check in-memory OR just-loaded cache)
+    const isStaleDemo = !LG.isDemoMode && (IDG.isDemoMode || IDG.data.users.some(u => u.id && String(u.id).startsWith('idg-demo-')));
     if (isStaleDemo) {
         console.log("Clearing stale demo data for Identity Governance...");
         IDG.data.users = [];
         IDG.data.policies = [];
+        IDG.isDemoMode = false;
     }
 
-    // Load Data
-    const hasCache = await loadIdgCache();
-    if (!hasCache || !IDG.data.users.length) {
+    if (!IDG.data.users.length) {
         if (LG.isDemoMode) {
             idgLoadDemoData();
         } else {
@@ -199,11 +205,15 @@ async function launchDeviceGovernance() {
     if (typeof dgInitUI === 'function') await dgInitUI();
     if (typeof dgNavigateTo === 'function') dgNavigateTo('devicegov-overview');
 
+    // Load Cache
+    if (typeof loadDgCache === 'function') await loadDgCache();
+
     // Invalidate demo data if switching to Live mode
-    const isStaleDemo = !LG.isDemoMode && DG.data.devices.some(d => d.id && d.id.startsWith('dev-'));
+    const isStaleDemo = !LG.isDemoMode && (DG.isDemoMode || DG.data.devices.some(d => d.id && String(d.id).startsWith('dev-')));
     if (isStaleDemo) {
         console.log("Clearing stale demo data for Device Governance...");
         DG.data.devices = [];
+        DG.isDemoMode = false;
     }
 
     // Auto-load data ONLY if we don't have cached data yet

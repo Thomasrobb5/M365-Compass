@@ -82,6 +82,7 @@ async function dgLoadDemoData() {
 
     DG.data.devices = devices;
     DG.data.lastSync = new Date();
+    DG.isDemoMode = true;
 
     if (typeof saveDgCache === 'function') await saveDgCache();
 

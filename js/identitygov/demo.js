@@ -11,7 +11,7 @@ function idgLoadDemoData() {
     // Sample Users with Identity Metrics
     const users = [
         {
-            id: '1',
+            id: 'idg-demo-1',
             displayName: 'John Doe',
             userPrincipalName: 'john.doe@contoso.com',
             department: 'IT',
@@ -26,7 +26,7 @@ function idgLoadDemoData() {
             signInSuccessRate: 98
         },
         {
-            id: '2',
+            id: 'idg-demo-2',
             displayName: 'Jane Smith',
             userPrincipalName: 'jane.smith@contoso.com',
             department: 'Finance',
@@ -41,7 +41,7 @@ function idgLoadDemoData() {
             signInSuccessRate: 92
         },
         {
-            id: '3',
+            id: 'idg-demo-3',
             displayName: 'Bob Wilson',
             userPrincipalName: 'bob.wilson@contoso.com',
             department: 'Sales',
@@ -56,7 +56,7 @@ function idgLoadDemoData() {
             signInSuccessRate: 45
         },
         {
-            id: '4',
+            id: 'idg-demo-4',
             displayName: 'Alice Brown',
             userPrincipalName: 'alice.brown@contoso.com',
             department: 'Engineering',
@@ -71,7 +71,7 @@ function idgLoadDemoData() {
             signInSuccessRate: 100
         },
         {
-            id: '5',
+            id: 'idg-demo-5',
             displayName: 'Charlie Davis',
             userPrincipalName: 'charlie.davis@contoso.com',
             department: 'HR',
@@ -96,7 +96,7 @@ function idgLoadDemoData() {
         const risk = Math.random() > 0.8 ? riskPool[Math.floor(Math.random() * 3) + 1] : 'None';
 
         users.push({
-            id: String(i),
+            id: 'idg-demo-' + i,
             displayName: `Demo User ${i}`,
             userPrincipalName: `user${i}@contoso.com`,
             department: dept,

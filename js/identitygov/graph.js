@@ -18,6 +18,7 @@ async function saveIdgCache() {
         await localforage.setItem(KEY_IDG_CACHE, {
             users: IDG.data.users,
             policies: IDG.data.policies,
+            isDemoMode: IDG.isDemoMode,
             ts: Date.now()
         });
     } catch (e) {
@@ -26,11 +27,13 @@ async function saveIdgCache() {
 }
 
 async function loadIdgCache() {
+
     try {
         const cached = await localforage.getItem(KEY_IDG_CACHE);
         if (cached && cached.users) {
             IDG.data.users = cached.users;
             IDG.data.policies = cached.policies || [];
+            IDG.isDemoMode = cached.isDemoMode || false;
             IDG.data.lastSync = new Date(cached.ts);
             return true;
         }

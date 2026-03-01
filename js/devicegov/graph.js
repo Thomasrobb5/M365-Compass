@@ -6,7 +6,8 @@ window.DG = {
     data: {
         devices: [],
         lastSync: null
-    }
+    },
+    isDemoMode: false
 };
 
 const KEY_DG_CACHE = 'm365_compass_dg_cache';
@@ -15,6 +16,7 @@ async function saveDgCache() {
     try {
         await localforage.setItem(KEY_DG_CACHE, {
             devices: DG.data.devices,
+            isDemoMode: DG.isDemoMode,
             ts: Date.now()
         });
     } catch (e) {
@@ -27,6 +29,7 @@ async function loadDgCache() {
         const cached = await localforage.getItem(KEY_DG_CACHE);
         if (cached && cached.devices) {
             DG.data.devices = cached.devices;
+            DG.isDemoMode = cached.isDemoMode || false;
             DG.data.lastSync = new Date(cached.ts);
             return true;
         }
