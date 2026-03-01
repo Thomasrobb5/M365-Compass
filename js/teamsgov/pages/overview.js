@@ -79,6 +79,9 @@ function tgRenderTable(teams, tbodyId) {
             activityCol = `<td class="text-sm whitespace-nowrap">${archivedBadge}</td>`;
         }
 
+        const dispOwners = t.owners >= 100 ? '100+' : t.owners;
+        const dispGuests = t.guests >= 100 ? '100+' : t.guests;
+
         html += `
             <tr class="hover:bg-surface-800/50 transition-colors cursor-pointer" onclick="tgOpenTeamDetailsModal('${t.id}')">
                 <td>
@@ -87,8 +90,8 @@ function tgRenderTable(teams, tbodyId) {
                 </td>
                 <td class="${visClass} capitalize">${escapeHtml(t.visibility)}</td>
                 ${activityCol}
-                <td class="text-center ${ownerClass}">${t.owners}</td>
-                <td class="text-center ${guestClass}">${t.guests}</td>
+                <td class="text-center ${ownerClass}">${dispOwners}</td>
+                <td class="text-center ${guestClass}">${dispGuests}</td>
                 <td class="text-right">
                     <button class="text-xs text-brand-400 hover:text-brand-300" onclick="event.stopPropagation(); tgOpenTeamDetailsModal('${t.id}')">View</button>
                 </td>
@@ -200,7 +203,15 @@ function tgExportTeamsCsv(tab) {
     if (tab === 'guests') { dataToExport = window.tgFilteredTeamsGuests; filename = 'guest-teams-export.csv'; }
     if (tab === 'archived') { dataToExport = window.tgFilteredTeamsArchived; filename = 'archived-teams-export.csv'; }
 
-    exportToCsv(dataToExport, filename, [
+    // Format data to show 100+ for large arrays
+    const formattedData = dataToExport.map(t => ({
+        ...t,
+        owners: t.owners >= 100 ? '100+' : t.owners,
+        members: t.members >= 100 ? '100+' : t.members,
+        guests: t.guests >= 100 ? '100+' : t.guests
+    }));
+
+    exportToCsv(formattedData, filename, [
         { label: 'Team', value: 'displayName' },
         { label: 'Visibility', value: 'visibility' },
         { label: 'Archived', value: 'isArchived' },
@@ -224,9 +235,9 @@ function tgOpenTeamDetailsModal(teamId) {
     document.getElementById('tg-detail-name').innerHTML = `${escapeHtml(t.displayName)} <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-700 ${t.visibility.toLowerCase() === 'public' ? 'text-violet-400' : 'text-slate-300'} capitalize">${escapeHtml(t.visibility)}</span>`;
     document.getElementById('tg-detail-id').textContent = `Group ID: ${t.id}`;
 
-    document.getElementById('tg-detail-guests').textContent = t.guests || 0;
-    document.getElementById('tg-detail-members').textContent = t.members || 0;
-    document.getElementById('tg-detail-owners').textContent = t.owners || 0;
+    document.getElementById('tg-detail-guests').textContent = t.guests >= 100 ? '100+' : (t.guests || 0);
+    document.getElementById('tg-detail-members').textContent = t.members >= 100 ? '100+' : (t.members || 0);
+    document.getElementById('tg-detail-owners').textContent = t.owners >= 100 ? '100+' : (t.owners || 0);
 
     document.getElementById('tg-detail-desc').textContent = t.description || 'No description provided.';
 
