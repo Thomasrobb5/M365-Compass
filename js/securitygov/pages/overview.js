@@ -224,7 +224,8 @@ function secRenderConsentGrants(filter = '') {
     SEC.data.grants.forEach(g => {
         const scope = (g.scope || '').toLowerCase();
         // Lookup display name from SP map using clientId
-        const spName = SEC.data.servicePrincipals[g.clientId] || g.displayName || 'Unknown App';
+        const spMap = SEC.data.servicePrincipals || {};
+        const spName = spMap[g.clientId] || g.displayName || 'Unknown App';
         const appNameLower = spName.toLowerCase();
         const clientId = (g.clientId || '').toLowerCase();
 

@@ -11,6 +11,8 @@ async function secLoadGraphData(forceRefresh = false) {
         if (cached && (Date.now() - cached.timestamp < 7 * 24 * 60 * 60 * 1000)) {
             console.log("Using cached security data");
             SEC.data = cached.data;
+            // Ensure properties exist if loading from old cache
+            if (!SEC.data.servicePrincipals) SEC.data.servicePrincipals = {};
             return;
         }
     }
