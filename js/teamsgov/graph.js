@@ -194,36 +194,54 @@ async function tgCreateTeamGraph(name, description, ownerUpn, templatePrefix) {
         throw new Error("Failed to create the underlying M365 Group. Ensure 'Group.ReadWrite.All' permission is granted.");
     }
 
-    // 3. Add the Team overlay (PUT /groups/{id}/team)
-    // Note: Graph API sometimes requires a few seconds delay after group creation before adding a Team
-    await new Promise(r => setTimeout(r, 2000));
+    // 3. Add the Team overlay
+    // Note: Graph API sometimes requires a few seconds delay after group creation before adding a Team.
+    // We will implement a retry mechanism for up to 5 attempts (total ~15s delay)
+    const teamPayload = {
+        "template@odata.bind": "https://graph.microsoft.com/v1.0/teamsTemplates('standard')",
+        "group@odata.bind": `https://graph.microsoft.com/v1.0/groups('${newGroup.id}')`,
+        "memberSettings": {
+            "allowCreateUpdateChannels": true
+        },
+        "messagingSettings": {
+            "allowUserEditMessages": true,
+            "allowUserDeleteMessages": true
+        },
+        "funSettings": {
+            "allowGiphy": true,
+            "giphyContentRating": "strict"
+        }
+    };
 
-    try {
-        const teamPayload = {
-            "memberSettings": {
-                "allowCreateUpdateChannels": true
-            },
-            "messagingSettings": {
-                "allowUserEditMessages": true,
-                "allowUserDeleteMessages": true
-            },
-            "funSettings": {
-                "allowGiphy": true,
-                "giphyContentRating": "strict"
-            }
-        };
-        await graphFetch(`https://graph.microsoft.com/v1.0/teams`, {
-            method: "POST", body: JSON.stringify({
-                "template@odata.bind": "https://graph.microsoft.com/v1.0/teamsTemplates('standard')",
-                "group@odata.bind": `https://graph.microsoft.com/v1.0/groups('${newGroup.id}')`,
-                ...teamPayload
-            })
-        });
+    let attempts = 0;
+    const maxAttempts = 5;
+    let teamCreated = false;
+    let lastError = null;
 
-        return newGroup.id;
-    } catch (e) {
-        console.error(e);
-        // Sometimes it fails if done too quickly, but the group is made.
+    while (attempts < maxAttempts && !teamCreated) {
+        attempts++;
+        // Exponential backoff: 3s, 5s, 7s...
+        const delay = 2000 + (attempts * 1000);
+        console.log(`Waiting ${delay}ms before applying Team overlay (Attempt ${attempts}/${maxAttempts})...`);
+        await new Promise(r => setTimeout(r, delay));
+
+        try {
+            await graphFetch(`https://graph.microsoft.com/v1.0/teams`, {
+                method: "POST",
+                body: JSON.stringify(teamPayload)
+            });
+            teamCreated = true;
+            console.log(`Successfully applied Team overlay to Group ${newGroup.id}`);
+        } catch (e) {
+            console.warn(`Attempt ${attempts} failed:`, e);
+            lastError = e;
+        }
+    }
+
+    if (!teamCreated) {
+        console.error("Max retries reached for Team overlay creation.", lastError);
         throw new Error("M365 Group was created, but applying the Team overlay failed or timed out. Ensure 'Team.Create' permission is granted.");
     }
+
+    return newGroup.id;
 }

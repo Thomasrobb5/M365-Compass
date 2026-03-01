@@ -119,8 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Back to hub
     document.getElementById('teamsgov-back-btn')?.addEventListener('click', () => {
-        document.getElementById('view-teamsgov').classList.add('hidden');
-        document.getElementById('view-hub').classList.remove('hidden');
+        if (typeof backToHub === 'function') {
+            backToHub();
+        } else {
+            document.getElementById('view-teamsgov').classList.add('hidden');
+            document.getElementById('view-hub').classList.remove('hidden');
+        }
     });
 
     // Refresh
