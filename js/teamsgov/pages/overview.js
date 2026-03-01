@@ -72,9 +72,11 @@ function tgRenderTable(teams, tbodyId) {
         const visClass = t.visibility.toLowerCase() === 'public' ? "text-violet-400" : "text-slate-400";
 
         let activityCol = '';
-        if (tbodyId === 'tg-teams-inactive-tbody') {
-            const actDate = t.lastActivityDate ? new Date(t.lastActivityDate).toLocaleDateString() : 'Unknown';
-            activityCol = `<td class="text-slate-400 text-sm whitespace-nowrap">${actDate}</td>`;
+        if (tbodyId === 'tg-teams-archived-tbody') {
+            const archivedBadge = t.isArchived
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-900/30 text-rose-400 border border-rose-800">Archived</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900/30 text-emerald-400 border border-emerald-800">Active</span>';
+            activityCol = `<td class="text-sm whitespace-nowrap">${archivedBadge}</td>`;
         }
 
         html += `
@@ -109,18 +111,10 @@ async function tgRenderOrphanedTeams() {
     tgRenderTable(window.tgFilteredTeamsOrphaned, 'tg-teams-orphaned-tbody');
 }
 
-async function tgRenderInactiveTeams() {
+async function tgRenderArchivedTeams() {
     const teams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
-    const days = parseInt(document.getElementById('tg-inactive-slider').value) || 90;
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-
-    window.tgFilteredTeamsInactive = teams.filter(t => {
-        if (!t.lastActivityDate) return true; // No activity recorded
-        const lastAct = new Date(t.lastActivityDate);
-        return lastAct < cutoffDate;
-    });
-    tgRenderTable(window.tgFilteredTeamsInactive, 'tg-teams-inactive-tbody');
+    window.tgFilteredTeamsArchived = teams.filter(t => t.isArchived === true);
+    tgRenderTable(window.tgFilteredTeamsArchived, 'tg-teams-archived-tbody');
 }
 
 function tgFilterTeams(tab) {
@@ -143,17 +137,11 @@ function tgFilterTeams(tab) {
         stateKey = 'tgFilteredTeamsOrphaned';
         tbodyId = 'tg-teams-orphaned-tbody';
     }
-    else if (tab === 'inactive') {
-        q = document.getElementById('tg-search-inactive').value.toLowerCase();
-        const days = parseInt(document.getElementById('tg-inactive-slider').value) || 90;
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - days);
-        source = allTeams.filter(t => {
-            if (!t.lastActivityDate) return true;
-            return new Date(t.lastActivityDate) < cutoffDate;
-        });
-        stateKey = 'tgFilteredTeamsInactive';
-        tbodyId = 'tg-teams-inactive-tbody';
+    else if (tab === 'archived') {
+        q = document.getElementById('tg-search-archived').value.toLowerCase();
+        source = allTeams.filter(t => t.isArchived === true);
+        stateKey = 'tgFilteredTeamsArchived';
+        tbodyId = 'tg-teams-archived-tbody';
     }
 
     if (!q) {
@@ -178,11 +166,12 @@ function tgExportTeamsCsv(tab) {
     if (tab === 'all') { dataToExport = window.tgFilteredTeamsAll; filename = 'all-teams-export.csv'; }
     if (tab === 'orphaned') { dataToExport = window.tgFilteredTeamsOrphaned; filename = 'orphaned-teams-export.csv'; }
     if (tab === 'inactive') { dataToExport = window.tgFilteredTeamsInactive; filename = 'inactive-teams-export.csv'; }
+    if (tab === 'archived') { dataToExport = window.tgFilteredTeamsArchived; filename = 'archived-teams-export.csv'; }
 
     exportToCsv(dataToExport, filename, [
         { label: 'Team', value: 'displayName' },
         { label: 'Visibility', value: 'visibility' },
-        { label: 'Last Activity', value: 'lastActivityDate' },
+        { label: 'Archived', value: 'isArchived' },
         { label: 'Owners Count', value: 'owners' },
         { label: 'Members', value: 'members' },
         { label: 'Guests', value: 'guests' },
@@ -210,7 +199,7 @@ function tgOpenTeamDetailsModal(teamId) {
     document.getElementById('tg-detail-desc').textContent = t.description || 'No description provided.';
 
     document.getElementById('tg-detail-created').textContent = t.createdDateTime ? new Date(t.createdDateTime).toLocaleDateString() : 'Unknown';
-    document.getElementById('tg-detail-activity').textContent = t.lastActivityDate ? new Date(t.lastActivityDate).toLocaleDateString() : 'Unknown';
+    document.getElementById('tg-detail-archived').textContent = t.isArchived ? 'Archived (Read-Only)' : 'Active Workspace';
 
     document.getElementById('tg-details-modal').classList.remove('hidden');
     lucide.createIcons();

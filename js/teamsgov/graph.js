@@ -66,43 +66,7 @@ async function tgLoadGraphData(forceRefresh = false) {
     try {
         tgUpdateLoading(10, "Fetching Teams list...");
 
-        // Step 1: Fetch Teams Activity Report to get lastActivityDate
-        // This report requires Reports.Read.All
-        let activityMap = new Map();
-        try {
-            tgUpdateLoading(15, "Fetching Team Activity report...");
-            const activityUrl = "https://graph.microsoft.com/v1.0/reports/getTeamsTeamActivityDetail(period='D180')";
-            let actCsv = await graphFetch(activityUrl, { responseType: 'text' });
-
-            if (actCsv) {
-                const lines = actCsv.split('\n').filter(l => l.trim().length > 0);
-                if (lines.length > 0) {
-                    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                    const pTeamId = headers.indexOf('Team Id');
-                    const pLastAct = headers.indexOf('Last Activity Date');
-
-                    if (pTeamId > -1 && pLastAct > -1) {
-                        for (let i = 1; i < lines.length; i++) {
-                            // Split by comma ignoring commas inside quotes
-                            const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/"/g, ''));
-                            const tId = cols[pTeamId];
-                            const tDate = cols[pLastAct];
-
-                            // Only set if not empty string
-                            if (tId && tDate) {
-                                activityMap.set(tId, tDate);
-                            }
-                        }
-                    } else {
-                        console.warn("Could not find 'Team Id' or 'Last Activity Date' in CSV headers:", headers);
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn("Could not fetch Teams activity report (Activity dates unavailable). Error details:", e);
-        }
-
-        // Step 2: Fetch all M365 Groups which are provisioned as Teams
+        // Step 1: Fetch all M365 Groups which are provisioned as Teams
         // The endpoint GET /groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')
         let groupsUrl = "https://graph.microsoft.com/v1.0/groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')&$select=id,displayName,description,visibility,createdDateTime";
         let allGroups = [];
@@ -146,13 +110,21 @@ async function tgLoadGraphData(forceRefresh = false) {
                     guests = members.filter(m => m.userType === 'Guest' || m.userPrincipalName?.includes('#EXT#'));
                 } catch (e) { console.warn(`Failed to fetch members for ${group.id}`); }
 
+                // Fetch Teams specific settings (isArchived)
+                const teamUrl = `https://graph.microsoft.com/v1.0/teams/${group.id}?$select=isArchived`;
+                let isArchived = false;
+                try {
+                    const tData = await graphFetch(teamUrl);
+                    isArchived = tData.isArchived === true;
+                } catch (e) { console.warn(`Failed to fetch team specific settings for ${group.id}`); }
+
                 return {
                     id: group.id,
                     displayName: group.displayName || 'Unnamed Team',
                     description: group.description,
                     visibility: group.visibility || 'Unknown',
                     createdDateTime: group.createdDateTime,
-                    lastActivityDate: activityMap.get(group.id) || null,
+                    isArchived: isArchived,
                     owners: owners.length,
                     members: members.length,
                     guests: guests.length,

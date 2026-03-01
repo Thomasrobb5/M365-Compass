@@ -1515,8 +1515,8 @@
                     <button class="tg-nav-item nav-item" data-tgpage="teamsgov-orphaned">
                         <i data-lucide="user-x" class="w-4 h-4 shrink-0"></i><span>Orphaned Teams</span>
                     </button>
-                    <button class="tg-nav-item nav-item" data-tgpage="teamsgov-inactive">
-                        <i data-lucide="clock" class="w-4 h-4 shrink-0"></i><span>Inactive Teams</span>
+                    <button class="tg-nav-item nav-item" data-tgpage="teamsgov-archived">
+                        <i data-lucide="archive" class="w-4 h-4 shrink-0"></i><span>Archived Teams</span>
                     </button>
                 </nav>
                 <div class="px-3 pb-4 border-t border-surface-800 pt-3 space-y-2">
@@ -1710,29 +1710,19 @@
                         </div>
                     </section>
 
-                    <!-- Inactive Teams Section -->
-                    <section id="teamsgov-inactive" class="tg-page-section p-6 hidden">
+                    <!-- Archived Teams Section -->
+                    <section id="teamsgov-archived" class="tg-page-section p-6 hidden">
                         <div class="content-card">
                             <div class="content-card-header flex items-center justify-between">
-                                <h3 class="section-title"><i data-lucide="clock" class="w-4 h-4 text-rose-400"></i>
-                                    Inactive Teams</h3>
-                                <div class="flex w-full items-center justify-end gap-5">
-                                    <div
-                                        class="flex items-center gap-3 bg-surface-800 px-4 py-1.5 rounded-lg border border-surface-700">
-                                        <span class="text-slate-400 text-sm font-medium">Inactive ></span>
-                                        <input type="range" id="tg-inactive-slider" min="30" max="180" step="30"
-                                            value="90" class="w-24 accent-blue-500 cursor-pointer"
-                                            oninput="document.getElementById('tg-inactive-label').innerText = this.value + ' days'"
-                                            onchange="tgFilterTeams('inactive')">
-                                        <span id="tg-inactive-label"
-                                            class="text-white text-sm font-bold min-w-[3rem]">90 days</span>
-                                    </div>
+                                <h3 class="section-title"><i data-lucide="archive" class="w-4 h-4 text-rose-400"></i>
+                                    Archived Teams</h3>
+                                <div class="flex items-center gap-2">
                                     <div class="relative"><i data-lucide="search"
                                             class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
-                                            id="tg-search-inactive" type="text" placeholder="Search inactive teams..."
-                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams('inactive')" />
+                                            id="tg-search-archived" type="text" placeholder="Search archived teams..."
+                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams('archived')" />
                                     </div>
-                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv('inactive')"><i
+                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv('archived')"><i
                                             data-lucide="download" class="w-3.5 h-3.5"></i> CSV</button>
                                 </div>
                             </div>
@@ -1742,13 +1732,13 @@
                                         <tr>
                                             <th>Team Name</th>
                                             <th>Visibility</th>
-                                            <th>Last Activity</th>
+                                            <th>Archived On</th>
                                             <th class="text-center">Owners</th>
                                             <th class="text-center">Guests</th>
                                             <th class="text-right">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tg-teams-inactive-tbody"></tbody>
+                                    <tbody id="tg-teams-archived-tbody"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -1823,10 +1813,10 @@
                         </div>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-slate-300 mb-2">Last Activity</h4>
+                        <h4 class="text-sm font-semibold text-slate-300 mb-2">Archived Status</h4>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
-                            <i data-lucide="activity" class="w-4 h-4"></i>
-                            <span id="tg-detail-activity">Unknown</span>
+                            <i data-lucide="archive" class="w-4 h-4"></i>
+                            <span id="tg-detail-archived">Unknown</span>
                         </div>
                     </div>
                 </div>
