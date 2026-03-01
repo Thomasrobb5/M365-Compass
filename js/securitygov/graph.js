@@ -17,12 +17,11 @@ async function secLoadGraphData(forceRefresh = false) {
 
     try {
         // 2. Fetch Directory Roles with members
-        // We use $expand=members to get who is assigned to each role in one call
-        const rolesResponse = await graphFetch('/directoryRoles?$expand=members');
+        const rolesResponse = await graphFetch('https://graph.microsoft.com/v1.0/directoryRoles?$expand=members');
         const roles = rolesResponse.value || [];
 
         // 3. Fetch OAuth2 Permission Grants (User Consent)
-        const grantsResponse = await graphFetch('/oauth2PermissionGrants');
+        const grantsResponse = await graphFetch('https://graph.microsoft.com/v1.0/oauth2PermissionGrants');
         const grants = grantsResponse.value || [];
 
         // 4. Transform and update state
