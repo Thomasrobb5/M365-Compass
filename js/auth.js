@@ -172,12 +172,17 @@ function getSavedConnections() {
 function saveConnection(config) {
     const saved = getSavedConnections();
     // Prevent duplicates (match by tenant + client)
-    const exists = saved.find(c => c.tenantId === config.tenantId && c.clientId === config.clientId);
-    if (!exists) {
+    const existsIndex = saved.findIndex(c => c.tenantId === config.tenantId && c.clientId === config.clientId);
+
+    if (existsIndex > -1) {
+        // Update existing with new friendly name or other details
+        saved[existsIndex] = { ...saved[existsIndex], ...config };
+    } else {
         saved.push({ ...config, id: Date.now() });
-        localStorage.setItem('lg_saved_connections', JSON.stringify(saved));
-        renderSavedConnections();
     }
+
+    localStorage.setItem('lg_saved_connections', JSON.stringify(saved));
+    renderSavedConnections();
 }
 
 function removeSavedConnection(id) {
@@ -218,7 +223,7 @@ function renderSavedConnections() {
                     </div>
                     
                     <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Tenant Profile</p>
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">${c.friendlyName || 'Tenant Profile'}</p>
                         <p class="text-sm font-bold text-white truncate leading-tight mb-1">${c.tenantId}</p>
                         <div class="flex items-center gap-2">
                              <div class="w-1.5 h-1.5 rounded-full bg-emerald-500/50"></div>
@@ -254,6 +259,9 @@ function selectSavedConnection(id) {
     const saved = getSavedConnections();
     const config = saved.find(c => c.id === id);
     if (config) {
+        if (document.getElementById('cfg-friendly-name')) {
+            document.getElementById('cfg-friendly-name').value = config.friendlyName || '';
+        }
         document.getElementById('cfg-tenant-id').value = config.tenantId;
         document.getElementById('cfg-client-id').value = config.clientId;
         document.getElementById('cfg-redirect-uri').value = config.redirectUri || window.location.origin;
@@ -306,6 +314,7 @@ async function bootstrapApp() {
 document.addEventListener('DOMContentLoaded', async () => {
     // Config Save
     document.getElementById('cfg-save-btn').addEventListener('click', async () => {
+        const friendlyName = document.getElementById('cfg-friendly-name')?.value.trim() || '';
         const tenantId = document.getElementById('cfg-tenant-id').value.trim();
         const clientId = document.getElementById('cfg-client-id').value.trim();
         const redirectUri = document.getElementById('cfg-redirect-uri').value.trim() || window.location.origin;
@@ -318,7 +327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const config = { tenantId, clientId, redirectUri, blobUrl };
+        const config = { friendlyName, tenantId, clientId, redirectUri, blobUrl };
         saveConfig(config);
 
         if (shouldSaveConnection) {
