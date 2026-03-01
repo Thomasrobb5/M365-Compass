@@ -74,6 +74,7 @@ async function tgLoadGraphData(forceRefresh = false) {
             const activityUrl = "https://graph.microsoft.com/v1.0/reports/getTeamsTeamActivityDetail(period='D180')?$format=application/json";
             let actData = await graphFetch(activityUrl);
             if (actData && actData.value) {
+                console.log("Teams Activity Report first item sample:", actData.value[0]);
                 actData.value.forEach(a => {
                     if (a.teamId && a.lastActivityDate) {
                         activityMap.set(a.teamId, a.lastActivityDate);
@@ -81,7 +82,7 @@ async function tgLoadGraphData(forceRefresh = false) {
                 });
             }
         } catch (e) {
-            console.warn("Could not fetch Teams activity report, Activity dates will be unavailable. Make sure 'Reports.Read.All' is granted.");
+            console.warn("Could not fetch Teams activity report (Activity dates unavailable). Error details:", e);
         }
 
         // Step 2: Fetch all M365 Groups which are provisioned as Teams
