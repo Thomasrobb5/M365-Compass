@@ -50,6 +50,7 @@ function showHub() {
     document.getElementById('view-devicegov').classList.add('hidden');
     document.getElementById('view-teamsgov').classList.add('hidden');
     document.getElementById('view-securitygov').classList.add('hidden');
+    document.getElementById('view-identitygov').classList.add('hidden');
 
     // Update hub user info
     const hubUser = document.getElementById('hub-user-info');
@@ -97,6 +98,24 @@ async function launchLicenceGovernance() {
     renderCurrentPage();
 }
 window.launchLicenceGovernance = launchLicenceGovernance;
+
+async function launchIdentityGovernance() {
+    document.getElementById('view-hub').classList.add('hidden');
+    document.getElementById('view-identitygov').classList.remove('hidden');
+
+    // Load Data
+    const hasCache = await loadIdgCache();
+    if (!hasCache || !IDG.data.users.length) {
+        if (LG.isDemoMode) {
+            idgLoadDemoData();
+        } else {
+            await idgLoadGraphData();
+        }
+    }
+
+    if (typeof idgInitUI === 'function') idgInitUI();
+}
+window.launchIdentityGovernance = launchIdentityGovernance;
 
 async function launchAppGovernance() {
     document.getElementById('view-hub').classList.add('hidden');

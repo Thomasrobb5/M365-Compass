@@ -14,6 +14,7 @@
   4. API permissions -> Add delegated permissions:
      - User.Read, User.Read.All, Organization.Read.All
      - Directory.Read.All, AuditLog.Read.All, Reports.Read.All
+     - Policy.Read.All, IdentityRiskyUser.Read.All, UserAuthenticationMethod.Read.All
   5. Grant admin consent
 
   RUNNING LOCALLY
@@ -122,6 +123,10 @@
                         <span class="permission-badge">Reports.Read.All</span>
                         <span class="permission-badge">Application.Read.All</span>
                         <span class="permission-badge">Organization.Read.All</span>
+                        <span class="permission-badge" title="For CA Policies">Policy.Read.All</span>
+                        <span class="permission-badge" title="For Identity Risk">IdentityRiskyUser.Read.All</span>
+                        <span class="permission-badge"
+                            title="For MFA Strength Details">UserAuthenticationMethod.Read.All</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -298,6 +303,26 @@
                                 <p class="text-[10px] text-slate-500">Intune health, encryption, and teams metadata</p>
                             </div>
                             <button onclick="clearPortalCache(['tg_device_data', 'tg_teams_data'])"
+                                class="text-[10px] font-bold text-red-400 hover:bg-red-900/20 px-3 py-1.5 rounded-lg border border-red-500/30 transition">Clear
+                                Cache</button>
+                        </div>
+                        <div
+                            class="flex items-center justify-between p-3 rounded-xl bg-surface-800 border border-surface-700">
+                            <div>
+                                <p class="text-xs font-bold text-white">Identity Governance</p>
+                                <p class="text-[10px] text-slate-500">MFA reports, risky users, and CA policies</p>
+                            </div>
+                            <button onclick="clearPortalCache('m365_compass_idg_cache')"
+                                class="text-[10px] font-bold text-red-400 hover:bg-red-900/20 px-3 py-1.5 rounded-lg border border-red-500/30 transition">Clear
+                                Cache</button>
+                        </div>
+                        <div
+                            class="flex items-center justify-between p-3 rounded-xl bg-surface-800 border border-surface-700">
+                            <div>
+                                <p class="text-xs font-bold text-white">App Governance</p>
+                                <p class="text-[10px] text-slate-500">Azure Function compile JSON blob & metadata</p>
+                            </div>
+                            <button onclick="clearPortalCache('ag_data_cache')"
                                 class="text-[10px] font-bold text-red-400 hover:bg-red-900/20 px-3 py-1.5 rounded-lg border border-red-500/30 transition">Clear
                                 Cache</button>
                         </div>
@@ -1222,19 +1247,55 @@
                     </div>
                 </div>
 
+                <!-- Identity Governance -->
+                <div onclick="launchIdentityGovernance()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-950/40 flex flex-col">
+                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #1e1b4b 0%, #0f0e2b 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #818cf8 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                            style="background: rgba(79,70,229,0.2); border: 1px solid rgba(79,70,229,0.3);">
+                            <i data-lucide="fingerprint" class="w-8 h-8 text-indigo-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col gap-3 flex-1">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Identity Governance</h3>
+                            <p class="text-xs text-indigo-400 font-medium mt-0.5">Secure Identity &amp; MFA Posture</p>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Audit MFA strength, track legacy
+                            authentication usage, monitor risky users, and review conditional access policies across
+                            your tenant.</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span
+                                class="text-xs bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-2 py-0.5 rounded-md">MFA
+                                Analysis</span>
+                            <span
+                                class="text-xs bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-2 py-0.5 rounded-md">Risky
+                                Users</span>
+                            <span
+                                class="text-xs bg-indigo-950/60 text-indigo-300 border border-indigo-900/60 px-2 py-0.5 rounded-md">CA
+                                Policies</span>
+                        </div>
+                        <button
+                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            style="background: rgba(79,70,229,0.25); border: 1px solid rgba(79,70,229,0.35);"
+                            onmouseover="this.style.background='rgba(79,70,229,0.4)'"
+                            onmouseout="this.style.background='rgba(79,70,229,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
             </div>
             <!-- Coming Soon — compact strip -->
             <div
                 class="border border-surface-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <p class="text-xs font-semibold text-slate-600 uppercase tracking-widest shrink-0">Coming Soon</p>
                 <div class="flex flex-wrap gap-3">
-                    <div class="flex items-center gap-2 opacity-40">
-                        <div class="w-6 h-6 rounded-md bg-surface-800 flex items-center justify-center">
-                            <i data-lucide="users" class="w-3.5 h-3.5 text-slate-500"></i>
-                        </div>
-                        <span class="text-sm text-slate-500">Identity Governance</span>
-                    </div>
-                    <div class="w-px h-4 bg-surface-700 self-center hidden sm:block"></div>
+
                     <div class="flex items-center gap-2 opacity-40">
                         <div class="w-6 h-6 rounded-md bg-surface-800 flex items-center justify-center">
                             <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-500"></i>
@@ -2316,6 +2377,210 @@
         </div><!-- /.flex.h-screen -->
     </div><!-- /#view-teamsgov -->
 
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Identity Governance                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-identitygov" class="hidden fixed inset-0 flex h-screen overflow-hidden text-white">
+        <!-- Identity Sidebar -->
+        <aside class="w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+            <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800 text-white">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-800 flex items-center justify-center shrink-0">
+                    <i data-lucide="fingerprint" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <span class="text-white font-bold text-base leading-none block">Identity Governance</span>
+                    <span class="text-slate-500 text-xs">M365 Security Posture</span>
+                </div>
+            </div>
+            <!-- Back to hub -->
+            <button onclick="showHub()"
+                class="mx-3 mt-3 flex items-center gap-2 text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-surface-800 transition">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Hub
+            </button>
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <button class="nav-item active identitygov-nav-item" data-page="identity-overview"><i
+                        data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span></button>
+                <button class="nav-item identitygov-nav-item" data-page="identity-users"><i data-lucide="shield-check"
+                        class="w-4 h-4 shrink-0"></i><span>MFA & Risk Audit</span></button>
+                <button class="nav-item identitygov-nav-item" data-page="identity-policies"><i data-lucide="lock"
+                        class="w-4 h-4 shrink-0"></i><span>CA Policies</span></button>
+            </nav>
+            <div class="px-3 pb-4 border-t border-surface-800 pt-3">
+                <button onclick="idgLoadGraphData()" class="nav-item"><i data-lucide="refresh-cw"
+                        class="w-4 h-4 shrink-0"></i><span>Refresh Data</span></button>
+            </div>
+            <div class="px-6 py-4 mt-auto border-t border-surface-800">
+                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Created By</p>
+                <p class="text-xs font-bold text-white">Thomas Robb</p>
+                <p class="text-[10px] text-slate-500">Solutions Engineer</p>
+                <p class="text-[10px] text-slate-600 mt-2">© 2026 M365 Compass</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden bg-surface-950">
+            <header
+                class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex flex-col md:flex-row items-center gap-4 shrink-0">
+                <div class="flex-1">
+                    <h1 id="identitygov-page-title" class="text-lg font-bold text-white">Identity Overview</h1>
+                    <p id="identitygov-page-subtitle" class="text-xs text-slate-400">Security posture at a glance</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative">
+                        <i data-lucide="search"
+                            class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                        <input type="text" id="idg-user-search" placeholder="Search users..."
+                            class="input-field pl-9 py-1.5 text-xs w-48 bg-surface-950 border-surface-800"
+                            oninput="idgApplyFilters()">
+                    </div>
+                    <select id="idg-filter-dept"
+                        class="input-field py-1.5 text-xs bg-surface-950 border-surface-800 text-slate-300"
+                        onchange="idgApplyFilters()">
+                        <option value="all">All Departments</option>
+                    </select>
+                    <select id="idg-filter-mfa"
+                        class="input-field py-1.5 text-xs bg-surface-950 border-surface-800 text-slate-300"
+                        onchange="idgApplyFilters()">
+                        <option value="all">All MFA Status</option>
+                        <option value="Strong">Strong MFA</option>
+                        <option value="Weak">Weak MFA</option>
+                        <option value="None">No MFA</option>
+                    </select>
+                    <select id="idg-filter-risk"
+                        class="input-field py-1.5 text-xs bg-surface-950 border-surface-800 text-slate-300"
+                        onchange="idgApplyFilters()">
+                        <option value="all">All Risk Levels</option>
+                        <option value="High">High Risk</option>
+                        <option value="Medium">Medium Risk</option>
+                        <option value="Low">Low Risk</option>
+                        <option value="None">No Risk</option>
+                    </select>
+                    <select id="idg-filter-admin"
+                        class="input-field py-1.5 text-xs bg-surface-950 border-surface-800 text-slate-300"
+                        onchange="idgApplyFilters()">
+                        <option value="all">All Roles</option>
+                        <option value="privileged">Privileged Admins</option>
+                        <option value="standard">Standard Users</option>
+                    </select>
+                    <button onclick="idgExportCsv()"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+                        title="Export filtered data to CSV">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span class="text-[10px] font-bold uppercase tracking-wider">Export</span>
+                    </button>
+                </div>
+                <button onclick="openSettings()"
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-800 border border-surface-700 text-slate-400 hover:text-white hover:bg-surface-700 transition"
+                    title="Privacy & Cache Settings">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                    <span class="text-xs font-bold uppercase tracking-wider">Compass Security</span>
+                </button>
+            </header>
+
+            <!-- Loading Overlay -->
+            <div id="identitygov-loading-overlay" class="flex-1 flex items-center justify-center hidden">
+                <div class="w-full max-w-sm px-6 text-center">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center mx-auto mb-5 shadow-lg">
+                        <i data-lucide="fingerprint" class="w-7 h-7 text-indigo-400"></i>
+                    </div>
+                    <p class="text-white font-semibold text-base mb-1" id="identitygov-loading-text">Loading identity
+                        data...</p>
+                    <p class="text-slate-500 text-xs mb-5" id="identitygov-loading-sub-text">Connecting to Azure AD</p>
+                    <div class="bg-surface-800 rounded-full h-2 overflow-hidden mb-3">
+                        <div id="identitygov-progress-bar" class="h-full bg-indigo-500 transition-all duration-300"
+                            style="width: 0%"></div>
+                    </div>
+                    <p class="text-slate-500 text-xs" id="identitygov-progress-pct">0%</p>
+                </div>
+            </div>
+
+            <main id="identitygov-pages" class="flex-1 overflow-y-auto">
+                <!-- Overview Page -->
+                <section id="page-identity-overview" class="identitygov-page-section p-6 space-y-6">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-indigo-500/15 text-indigo-400"><i data-lucide="shield-check"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value" id="idg-kpi-mfa-pct">-</div>
+                            <div class="kpi-label">MFA Coverage</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-red-500/15 text-red-400"><i data-lucide="alert-circle"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value text-red-400" id="idg-kpi-risky-users">-</div>
+                            <div class="kpi-label">Risky Users</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-orange-500/15 text-orange-400"><i data-lucide="unplug"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value text-orange-400" id="idg-kpi-legacy-auth">-</div>
+                            <div class="kpi-label">Legacy Auth Use</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon bg-blue-500/15 text-blue-400"><i data-lucide="lock"
+                                    class="w-5 h-5"></i></div>
+                            <div class="kpi-value" id="idg-kpi-policies">-</div>
+                            <div class="kpi-label">Active CA Policies</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title"><i data-lucide="pie-chart" class="w-4 h-4 text-indigo-400"></i>
+                                    MFA Strength Distribution</h3>
+                            </div>
+                            <div class="chart-body flex items-center justify-center p-4"><canvas id="idg-chart-mfa-dist"
+                                    class="max-h-64"></canvas></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title"><i data-lucide="bar-chart-3"
+                                        class="w-4 h-4 text-indigo-400"></i> Strong MFA by Department</h3>
+                            </div>
+                            <div class="chart-body p-4"><canvas id="idg-chart-security-trends"
+                                    class="max-h-64"></canvas></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Users Page -->
+                <section id="page-identity-users" class="identitygov-page-section p-6 hidden">
+                    <div class="content-card">
+                        <div class="content-card-header">
+                            <h3 class="section-title"><i data-lucide="users" class="w-4 h-4 text-indigo-400"></i> User
+                                Security Analysis</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Name</th>
+                                        <th class="text-left">Department</th>
+                                        <th class="text-center">MFA Status</th>
+                                        <th class="text-center">Risk Level</th>
+                                        <th class="text-center">Modern Auth</th>
+                                        <th class="text-right">Sign-in Success</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="idg-users-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Policies Page -->
+                <section id="page-identity-policies" class="identitygov-page-section p-6 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="idg-policies-container">
+                        <!-- Policy cards injected here -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
     <!-- Team Details Modal -->
     <div id="tg-details-modal"
         class="fixed inset-0 z-[8500] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden animate-fade-in">
@@ -2541,6 +2806,10 @@
     <script src="js/securitygov/demo.js"></script>
     <script src="js/securitygov/ui.js"></script>
     <script src="js/securitygov/pages/overview.js"></script>
+
+    <script src="js/identitygov/graph.js"></script>
+    <script src="js/identitygov/demo.js"></script>
+    <script src="js/identitygov/ui.js"></script>
 
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
