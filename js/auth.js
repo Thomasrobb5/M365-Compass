@@ -197,22 +197,52 @@ function renderSavedConnections() {
         return;
     }
 
-    if (container) container.classList.remove('hidden');
+    if (container) {
+        container.classList.remove('hidden');
+        // Ensure it uses flex on desktop (set in HTML class too but being safe)
+        container.classList.add('md:flex');
+    }
+
     if (countBadge) countBadge.textContent = saved.length;
+
     if (list) {
         list.innerHTML = saved.map(c => `
-            <div class="bg-surface-800 border border-surface-700 hover:border-brand-500/50 rounded-xl p-4 transition-all group cursor-pointer relative" onclick="selectSavedConnection(${c.id})">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500">
-                        <i data-lucide="shield" class="w-5 h-5"></i>
+            <div class="group relative bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 hover:border-brand-500/30 rounded-2xl p-4 transition-all duration-300 cursor-pointer overflow-hidden" 
+                 onclick="selectSavedConnection(${c.id})">
+                <!-- Subtle Gradient Glow -->
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-brand-500/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div class="flex items-center gap-4 relative z-10">
+                    <div class="w-12 h-12 rounded-xl bg-surface-800 border border-white/5 flex items-center justify-center text-brand-400 group-hover:text-brand-300 transition-colors shadow-inner">
+                        <i data-lucide="shield" class="w-6 h-6"></i>
                     </div>
-                    <div class="flex-1 overflow-hidden">
-                        <p class="text-xs font-bold text-white truncate">${c.tenantId}</p>
-                        <p class="text-[10px] text-slate-500 truncate">Client: ${c.clientId.substring(0, 8)}...</p>
+                    
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Tenant Profile</p>
+                        <p class="text-sm font-bold text-white truncate leading-tight mb-1">${c.tenantId}</p>
+                        <div class="flex items-center gap-2">
+                             <div class="w-1.5 h-1.5 rounded-full bg-emerald-500/50"></div>
+                             <p class="text-[10px] text-slate-400 font-medium truncate">Client: ${c.clientId.substring(0, 12)}...</p>
+                        </div>
                     </div>
-                    <button onclick="event.stopPropagation(); removeSavedConnection(${c.id})" class="p-1.5 rounded-lg bg-surface-700 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
+                    
+                    <!-- Action Overlay -->
+                    <div class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 duration-300">
+                        <button onclick="event.stopPropagation(); removeSavedConnection(${c.id})" 
+                                class="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                                title="Remove Profile">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Touch to Connect Indicator -->
+                <div class="mt-3 pt-3 border-t border-white/5 flex items-center justify-between opacity-40 group-hover:opacity-100 transition-opacity">
+                    <span class="text-[9px] font-bold text-slate-500 group-hover:text-brand-400 uppercase tracking-widest">Saved locally</span>
+                    <div class="flex items-center gap-1 text-[10px] font-bold text-brand-400">
+                        <span>Connect</span>
+                        <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                    </div>
                 </div>
             </div>
         `).join('');
