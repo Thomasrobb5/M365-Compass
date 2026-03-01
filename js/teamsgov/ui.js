@@ -17,8 +17,10 @@ function launchTeamsGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
     // Show Teams Gov
     const viewTg = document.getElementById('view-teamsgov');
+
+    // Clear any previous inline styles that might interfere with Tailwind classes
+    viewTg.style.display = '';
     viewTg.classList.remove('hidden');
-    viewTg.style.display = 'block'; // Force display just in case
 
     // Add slide-in animation
     viewTg.style.animation = 'none';
