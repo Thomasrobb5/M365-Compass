@@ -56,19 +56,26 @@ function renderSecCharts() {
     }
 }
 
-function secRenderAdminRoles(filter = '') {
+function secRenderAdminRoles(filter = '', roleId = null) {
     const tbody = document.getElementById('sec-admins-tbody');
     tbody.innerHTML = '';
     const q = filter.toLowerCase();
+    const activeId = roleId || SEC.state.activeRoleId;
 
     SEC.data.roles.forEach(role => {
         if (!role.members || role.members.length === 0) return;
+
+        // If filtering by a specific role (card click), only show that role
+        if (activeId && role.id !== activeId) return;
 
         role.members.forEach(member => {
             const isExternal = member.userPrincipalName?.includes('#EXT#');
             const isGlobal = role.displayName === "Global Administrator";
 
-            // Filter logic
+            // Filter logic (Search keyword)
+            // BUG FIX: We search by role, name, or UPN. 
+            // If the user matches, this row is shown. Since we iterate ROLES first,
+            // a user in 3 roles will show up 3 times if they match the search.
             if (q && !role.displayName.toLowerCase().includes(q) &&
                 !member.displayName.toLowerCase().includes(q) &&
                 !member.userPrincipalName.toLowerCase().includes(q)) {
@@ -102,6 +109,67 @@ function secRenderAdminRoles(filter = '') {
         });
     });
 }
+
+function secRenderRoleCards() {
+    const container = document.getElementById('sec-role-cards-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Sort roles by member count descending
+    const sortedRoles = [...SEC.data.roles].sort((a, b) => (b.members?.length || 0) - (a.members?.length || 0));
+
+    sortedRoles.forEach(role => {
+        if (!role.members || role.members.length === 0) return;
+
+        const count = role.members.length;
+        const isGlobal = role.displayName === "Global Administrator";
+        const isActive = SEC.state.activeRoleId === role.id;
+
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border transition-all cursor-pointer group flex flex-col justify-between h-24 ${isActive
+                ? 'bg-red-500/10 border-red-500 shadow-lg shadow-red-900/20'
+                : 'bg-surface-900 border-surface-800 hover:border-surface-600'
+            }`;
+
+        card.onclick = () => secApplyRoleFilter(role.id, role.displayName);
+
+        card.innerHTML = `
+            <div class="flex items-start justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider ${isGlobal ? 'text-red-400' : 'text-slate-500'}">${isGlobal ? 'Critical Role' : 'Directory Role'}</span>
+                <div class="w-6 h-6 rounded-lg ${isGlobal ? 'bg-red-500/10 text-red-500' : 'bg-surface-800 text-slate-400'} flex items-center justify-center">
+                    <i data-lucide="${isGlobal ? 'shield-alert' : 'user-cog'}" class="w-3.5 h-3.5"></i>
+                </div>
+            </div>
+            <div>
+                <div class="text-sm font-bold text-white truncate mb-0.5">${role.displayName}</div>
+                <div class="text-xs text-slate-500">${count} Members</div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    lucide.createIcons({ nodes: [container] });
+}
+
+function secApplyRoleFilter(roleId, roleName) {
+    if (SEC.state.activeRoleId === roleId) {
+        secClearRoleFilter();
+        return;
+    }
+
+    SEC.state.activeRoleId = roleId;
+
+    // Update UI Filter Badge
+    const badge = document.getElementById('sec-active-role-filter');
+    const badgeName = document.getElementById('sec-active-role-name');
+    badge.classList.remove('hidden');
+    badgeName.textContent = roleName;
+
+    // Refresh views
+    secRenderRoleCards();
+    secRenderAdminRoles();
+}
+window.secApplyRoleFilter = secApplyRoleFilter;
 
 function secRenderGlobalAdmins(filter = '') {
     const tbody = document.getElementById('sec-globaladmins-tbody');

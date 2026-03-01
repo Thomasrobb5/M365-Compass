@@ -20,17 +20,18 @@ async function secLoadDemoData() {
             ]
         },
         {
-            displayName: "Helpdesk Administrator",
-            description: "Can reset passwords for non-administrators.",
+            displayName: "Authentication Administrator",
+            description: "Can reset passwords for non-administrators and specific roles.",
             members: [
-                { displayName: "Isaiah Langer", userPrincipalName: "isaiah@contoso.com" },
-                { displayName: "Joni Sherman", userPrincipalName: "joni@contoso.com" }
+                { displayName: "Thomas Robb", userPrincipalName: "thomas@contoso.com" },
+                { displayName: "Isaiah Langer", userPrincipalName: "isaiah@contoso.com" }
             ]
         },
         {
             displayName: "User Administrator",
             description: "Can manage all aspects of users and groups.",
             members: [
+                { displayName: "Thomas Robb", userPrincipalName: "thomas@contoso.com" },
                 { displayName: "Lidia Holloway", userPrincipalName: "lidia@contoso.com" }
             ]
         },
@@ -45,7 +46,8 @@ async function secLoadDemoData() {
             displayName: "Teams Administrator",
             description: "Full access to Teams settings and data.",
             members: [
-                { displayName: "Nestor Wilke", userPrincipalName: "nestor@contoso.com" }
+                { displayName: "Nestor Wilke", userPrincipalName: "nestor@contoso.com" },
+                { displayName: "Thomas Robb", userPrincipalName: "thomas@contoso.com" }
             ]
         }
     ];

@@ -9,7 +9,9 @@ const SEC = {
     },
     state: {
         isLoaded: false,
-        currentPage: 'securitygov-overview'
+        initialized: false,
+        currentPage: 'securitygov-overview',
+        activeRoleId: null // Current role drill-down filter
     }
 };
 
@@ -147,6 +149,7 @@ function renderSecPage(pageId) {
     if (pageId === 'securitygov-overview') {
         if (typeof secRenderOverview === 'function') secRenderOverview();
     } else if (pageId === 'securitygov-admins') {
+        if (typeof secRenderRoleCards === 'function') secRenderRoleCards();
         if (typeof secRenderAdminRoles === 'function') secRenderAdminRoles();
     } else if (pageId === 'securitygov-globaladmins') {
         if (typeof secRenderGlobalAdmins === 'function') secRenderGlobalAdmins();
@@ -154,3 +157,12 @@ function renderSecPage(pageId) {
         if (typeof secRenderConsentGrants === 'function') secRenderConsentGrants();
     }
 }
+
+function secClearRoleFilter() {
+    SEC.state.activeRoleId = null;
+    document.getElementById('sec-active-role-filter').classList.add('hidden');
+    document.getElementById('sec-admins-search').value = '';
+    secRenderAdminRoles();
+    secRenderRoleCards();
+}
+window.secClearRoleFilter = secClearRoleFilter;

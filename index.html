@@ -1652,11 +1652,23 @@
                     </div>
 
                     <!-- Tab: Admin Roles -->
-                    <div id="securitygov-admins" class="sec-page p-6 hidden">
+                    <div id="securitygov-admins" class="sec-page p-6 hidden space-y-6">
+                        <!-- Role Selector Cards -->
+                        <div id="sec-role-cards-container"
+                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                            <!-- Dynamically populated -->
+                        </div>
+
                         <div class="content-card">
                             <div class="content-card-header justify-between flex-wrap gap-4">
                                 <div class="flex items-center gap-4 flex-1 min-w-[300px]">
-                                    <h3 class="section-title whitespace-nowrap">Directory Role Inventory</h3>
+                                    <h3 class="section-title whitespace-nowrap">Role Membership</h3>
+                                    <div id="sec-active-role-filter"
+                                        class="hidden flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-2 py-1 rounded text-[10px] text-red-400 font-bold">
+                                        <span id="sec-active-role-name">Global Admin</span>
+                                        <button onclick="secClearRoleFilter()" class="hover:text-white"><i
+                                                data-lucide="x" class="w-3 h-3"></i></button>
+                                    </div>
                                     <div class="relative flex-1 max-w-sm">
                                         <i data-lucide="search"
                                             class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
