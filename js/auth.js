@@ -185,6 +185,19 @@ function saveConnection(config) {
     renderSavedConnections();
 }
 
+function toggleSavedProfiles(show) {
+    const container = document.getElementById('saved-connections-container');
+    if (!container) return;
+
+    if (show) {
+        container.classList.remove('translate-x-full');
+        document.body.classList.add('overflow-hidden'); // Prevent background scroll
+    } else {
+        container.classList.add('translate-x-full');
+        document.body.classList.remove('overflow-hidden');
+    }
+}
+
 function removeSavedConnection(id) {
     const saved = getSavedConnections().filter(c => c.id !== id);
     localStorage.setItem('lg_saved_connections', JSON.stringify(saved));
@@ -193,24 +206,24 @@ function removeSavedConnection(id) {
 
 function renderSavedConnections() {
     const container = document.getElementById('saved-connections-container');
+    const toggleBtn = document.getElementById('saved-profiles-toggle');
     const list = document.getElementById('saved-connections-list');
-    const countBadge = document.getElementById('saved-count');
+    const toggleCountBadge = document.getElementById('saved-toggle-count');
     const saved = getSavedConnections();
 
     if (saved.length === 0) {
-        if (container) container.classList.add('hidden');
+        if (container) container.classList.add('translate-x-full');
+        if (toggleBtn) toggleBtn.classList.add('hidden');
         if (list) list.innerHTML = '';
-        if (countBadge) countBadge.textContent = '0';
+        if (toggleCountBadge) toggleCountBadge.textContent = '0';
         return;
     }
 
-    if (container) {
-        container.classList.remove('hidden');
-        // Ensure it uses flex on desktop (set in HTML class too but being safe)
-        container.classList.add('md:flex');
+    // Toggle button visibility
+    if (toggleBtn) {
+        toggleBtn.classList.remove('hidden');
+        if (toggleCountBadge) toggleCountBadge.textContent = saved.length;
     }
-
-    if (countBadge) countBadge.textContent = saved.length;
 
     if (list) {
         list.innerHTML = saved.map(c => `
@@ -261,6 +274,7 @@ function selectSavedConnection(id) {
     const saved = getSavedConnections();
     const config = saved.find(c => c.id === id);
     if (config) {
+        toggleSavedProfiles(false);
         if (document.getElementById('cfg-friendly-name')) {
             document.getElementById('cfg-friendly-name').value = config.friendlyName || '';
         }
