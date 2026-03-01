@@ -518,11 +518,8 @@ async function clearAllCache() {
     if (!confirmClear) return;
 
     try {
-        // Clear all known keys
-        const allKeys = ['lg_data_cache', 'tg_sec_data', 'tg_device_data', 'tg_teams_data', 'tg_app_data', 'lg_rates', 'lg_excluded_skus'];
-        for (const key of allKeys) {
-            await localforage.removeItem(key);
-        }
+        // Clear all localforage (IndexedDB) data for this origin
+        await localforage.clear();
 
         // Also clear standard localStorage if used for any small flags
         localStorage.clear();
