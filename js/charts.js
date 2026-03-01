@@ -453,3 +453,85 @@ function renderTeamsGuestsChart(teams) {
 window.renderTeamsVisibilityChart = renderTeamsVisibilityChart;
 window.renderTeamsTemplateChart = renderTeamsTemplateChart;
 window.renderTeamsGuestsChart = renderTeamsGuestsChart;
+
+// ── Security Governance Charts ──────────────────────────────────────────────
+window.renderAdminDistributionChart = function (labels, data) {
+    const ctx = document.getElementById('sec-chart-admins');
+    if (!ctx) return;
+
+    if (window.secAdminChart) window.secAdminChart.destroy();
+
+    window.secAdminChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.7)',  // Global Admin (Red)
+                    'rgba(245, 158, 11, 0.7)', // Amber
+                    'rgba(16, 185, 129, 0.7)', // Emerald
+                    'rgba(59, 130, 246, 0.7)', // Blue
+                    'rgba(139, 92, 246, 0.7)', // Violet
+                    'rgba(6, 182, 212, 0.7)',  // Cyan
+                    'rgba(107, 114, 128, 0.7)' // Gray
+                ],
+                borderColor: 'rgba(15, 23, 42, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { color: COLORS.textSecondary, font: { size: 10 }, usePointStyle: true }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+};
+
+window.renderConsentRiskChart = function (labels, data) {
+    const ctx = document.getElementById('sec-chart-consent');
+    if (!ctx) return;
+
+    if (window.secConsentChart) window.secConsentChart.destroy();
+
+    window.secConsentChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Grants',
+                data: data,
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.6)',
+                    'rgba(245, 158, 11, 0.6)',
+                    'rgba(71, 85, 105, 0.6)'
+                ],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: COLORS.textSecondary, stepSize: 1 }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: COLORS.textSecondary }
+                }
+            }
+        }
+    });
+};

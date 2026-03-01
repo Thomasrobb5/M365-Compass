@@ -211,7 +211,7 @@ function tgExportTeamsCsv(tab) {
         guests: t.guests >= 100 ? '100+' : t.guests
     }));
 
-    exportToCsv(formattedData, filename, [
+    exportToCsv(filename, formattedData, [
         { label: 'Team', value: 'displayName' },
         { label: 'Visibility', value: 'visibility' },
         { label: 'Archived', value: 'isArchived' },
@@ -223,33 +223,7 @@ function tgExportTeamsCsv(tab) {
     ]);
 }
 
-function exportToCsv(data, filename, columns) {
-    if (!data || !data.length) return;
 
-    // Create header row
-    const headers = columns.map(c => `"${c.label}"`).join(',');
-
-    // Create data rows
-    const rows = data.map(item => {
-        return columns.map(col => {
-            let val = item[col.value] !== undefined && item[col.value] !== null ? item[col.value] : '';
-            if (typeof val === 'string') {
-                // Escape quotes and wrapp in quotes
-                val = `"${val.replace(/"/g, '""')}"`;
-            }
-            return val;
-        }).join(',');
-    });
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
 
 // ----------------------------------------------------------------------------
 // Team Details Modal

@@ -49,6 +49,7 @@ function showHub() {
     document.getElementById('view-appgov').classList.add('hidden');
     document.getElementById('view-devicegov').classList.add('hidden');
     document.getElementById('view-teamsgov').classList.add('hidden');
+    document.getElementById('view-securitygov').classList.add('hidden');
 
     // Update hub user info
     const hubUser = document.getElementById('hub-user-info');
@@ -131,6 +132,7 @@ function backToHub() {
     document.getElementById('view-appgov').classList.add('hidden');
     document.getElementById('view-devicegov').classList.add('hidden');
     document.getElementById('view-teamsgov').classList.add('hidden');
+    document.getElementById('view-securitygov').classList.add('hidden');
     document.getElementById('view-hub').classList.remove('hidden');
     // Refresh org/user info in hub header
     const hubOrg = document.getElementById('hub-org-name');
@@ -143,6 +145,8 @@ async function launchDeviceGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
     document.getElementById('view-licence').classList.add('hidden');
     document.getElementById('view-appgov').classList.add('hidden');
+    document.getElementById('view-teamsgov').classList.add('hidden');
+    document.getElementById('view-securitygov').classList.add('hidden');
     document.getElementById('view-devicegov').classList.remove('hidden');
 
     if (typeof dgInitUI === 'function') await dgInitUI();
@@ -158,6 +162,63 @@ async function launchDeviceGovernance() {
     }
 }
 window.launchDeviceGovernance = launchDeviceGovernance;
+
+// ── Launch Security Governance ─────────────────────────────────────────────
+async function launchSecurityGovernance() {
+    document.getElementById('view-hub').classList.add('hidden');
+    document.getElementById('view-licence').classList.add('hidden');
+    document.getElementById('view-appgov').classList.add('hidden');
+    document.getElementById('view-teamsgov').classList.add('hidden');
+    document.getElementById('view-devicegov').classList.add('hidden');
+    document.getElementById('view-securitygov').classList.remove('hidden');
+
+    if (typeof launchSecGov === 'function') await launchSecGov();
+}
+window.launchSecurityGovernance = launchSecurityGovernance;
+
+/**
+ * Global CSV Export Utility
+ * @param {Array} data - Array of objects or arrays
+ * @param {String} filename - Output filename
+ * @param {Array} columns - Optional. If provided, maps objects: [{label: 'Header', value: 'key'}]
+ */
+function exportToCsv(filename, data, columns = null) {
+    if (!data || !data.length) return;
+
+    let csvContent = "";
+
+    if (columns) {
+        // Map objects based on columns
+        const headers = columns.map(c => `"${c.label}"`).join(',');
+        const rows = data.map(item => {
+            return columns.map(col => {
+                let val = item[col.value] !== undefined && item[col.value] !== null ? item[col.value] : '';
+                if (typeof val === 'string') val = `"${val.replace(/"/g, '""')}"`;
+                return val;
+            }).join(',');
+        });
+        csvContent = [headers, ...rows].join('\n');
+    } else {
+        // Assume data is already arrays of rows (first row is header)
+        csvContent = data.map(row => {
+            return row.map(cell => {
+                let val = cell !== undefined && cell !== null ? String(cell) : '';
+                return `"${val.replace(/"/g, '""')}"`;
+            }).join(',');
+        }).join('\n');
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+window.exportToCsv = exportToCsv;
 
 // ── Dispatch to page renderers ─────────────────────────────────────────────
 function renderPage(page) {

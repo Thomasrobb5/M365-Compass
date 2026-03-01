@@ -994,6 +994,47 @@
                     </div>
                 </div>
 
+                <!-- Security Governance -->
+                <div onclick="launchSecurityGovernance()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-red-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-red-950/40 flex flex-col">
+                    <div class="h-36 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #450a0a 0%, #1e0505 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #ef4444 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center relative z-10"
+                            style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.3);">
+                            <i data-lucide="shield-alert" class="w-8 h-8 text-red-400"></i>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col gap-3 flex-1">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Security Governance</h3>
+                            <p class="text-xs text-red-400 font-medium mt-0.5">Privileged Access & Risk</p>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed flex-1">Audit directory roles, monitor Global
+                            Admin sprawl, and review third-party app consent grants to mitigate tenant risk.</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span
+                                class="text-xs bg-red-950/60 text-red-300 border border-red-900/60 px-2 py-0.5 rounded-md">Admin
+                                Audit</span>
+                            <span
+                                class="text-xs bg-red-950/60 text-red-300 border border-red-900/60 px-2 py-0.5 rounded-md">OAuth
+                                Risk</span>
+                            <span
+                                class="text-xs bg-red-950/60 text-red-300 border border-red-900/60 px-2 py-0.5 rounded-md">Global
+                                Admins</span>
+                        </div>
+                        <button
+                            class="w-full mt-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200"
+                            style="background: rgba(239,68,68,0.25); border: 1px solid rgba(239,68,68,0.35);"
+                            onmouseover="this.style.background='rgba(239,68,68,0.4)'"
+                            onmouseout="this.style.background='rgba(239,68,68,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
             </div>
             <!-- Coming Soon — compact strip -->
             <div
@@ -1484,8 +1525,183 @@
     </div><!-- /#view-devicegov -->
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- VIEW: Teams Governance                                              -->
+    <!-- VIEW: Security Governance                                           -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="view-securitygov" class="hidden">
+        <!-- App Shell -->
+        <div class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <aside class="w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+                <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="text-white font-bold text-base leading-none block">Security Gov</span>
+                        <span class="text-slate-500 text-xs">Risk & Access</span>
+                    </div>
+                </div>
+                <!-- Back to hub -->
+                <button id="securitygov-back-btn"
+                    class="mx-3 mt-3 flex items-center gap-2 text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-surface-800 transition">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Hub
+                </button>
+                <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
+                    <button class="sec-nav-item nav-item active" data-secpage="securitygov-overview">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span>
+                    </button>
+                    <button class="sec-nav-item nav-item" data-secpage="securitygov-admins">
+                        <i data-lucide="user-cog" class="w-4 h-4 shrink-0"></i><span>Admin Roles</span>
+                    </button>
+                    <button class="sec-nav-item nav-item" data-secpage="securitygov-consent">
+                        <i data-lucide="key" class="w-4 h-4 shrink-0"></i><span>Consent Grants</span>
+                    </button>
+                </nav>
+                <div class="px-3 pb-4 border-t border-surface-800 pt-3 space-y-2">
+                    <button id="securitygov-refresh-btn" class="nav-item group relative">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 shrink-0"></i><span>Refresh Data</span>
+                    </button>
+                    <p class="text-[9px] text-slate-500 leading-tight px-2 pb-2 text-center italic">Compliance data is
+                        cached securely within your browser.</p>
+                </div>
+                <div class="px-6 py-4 mt-auto border-t border-surface-800">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Created By</p>
+                    <p class="text-xs font-bold text-white">Thomas Robb</p>
+                    <p class="text-[10px] text-slate-500">Solutions Engineer</p>
+                    <p class="text-[10px] text-slate-600 mt-2">© 2026 M365 Compass</p>
+                </div>
+            </aside>
+
+            <!-- Security Gov Main -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <header
+                    class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex items-center gap-4 shrink-0 justify-between">
+                    <div class="flex-1">
+                        <h1 id="securitygov-page-title" class="text-lg font-bold text-white">Overview</h1>
+                        <p id="securitygov-page-subtitle" class="text-xs text-slate-400">Tenant-wide security posture
+                        </p>
+                    </div>
+                </header>
+
+                <!-- Loading Overlay -->
+                <div id="securitygov-loading-overlay" class="flex-1 flex items-center justify-center hidden">
+                    <div class="w-full max-w-sm px-6 text-center">
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-red-900/40 animate-pulse">
+                            <i data-lucide="shield-alert" class="w-7 h-7 text-white"></i>
+                        </div>
+                        <p class="text-white font-semibold text-base mb-1" id="security-loading-text">Audit in
+                            progress...</p>
+                        <p class="text-slate-500 text-xs" id="security-loading-sub-text">Connecting to Graph API</p>
+                    </div>
+                </div>
+
+                <!-- Pages Container -->
+                <main id="securitygov-pages" class="flex-1 overflow-y-auto bg-surface-950 relative">
+
+                    <!-- Tab: Overview -->
+                    <div id="securitygov-overview" class="sec-page p-6 space-y-6">
+                        <!-- KPIs -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="kpi-card hover:border-red-500/30 transition-colors">
+                                <div class="kpi-icon bg-red-500/10 text-red-500"><i data-lucide="user-cog"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="sec-kpi-total-admins">-</div>
+                                <div class="kpi-label uppercase tracking-wider">Alt Total Admins</div>
+                            </div>
+                            <div class="kpi-card hover:border-brand-500/30 transition-colors">
+                                <div class="kpi-icon bg-brand-500/10 text-brand-400"><i data-lucide="alert-triangle"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="sec-kpi-global-admins">-</div>
+                                <div class="kpi-label uppercase tracking-wider">Global Admins</div>
+                            </div>
+                            <div class="kpi-card hover:border-violet-500/30 transition-colors">
+                                <div class="kpi-icon bg-violet-500/10 text-violet-400"><i data-lucide="target"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="sec-kpi-privileged-roles">-</div>
+                                <div class="kpi-label uppercase tracking-wider">Privileged Roles</div>
+                            </div>
+                            <div class="kpi-card hover:border-orange-500/30 transition-colors">
+                                <div class="kpi-icon bg-orange-500/10 text-orange-400"><i data-lucide="key"
+                                        class="w-5 h-5"></i></div>
+                                <div class="kpi-value" id="sec-kpi-total-grants">-</div>
+                                <div class="kpi-label uppercase tracking-wider">Total Consent Grants</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="chart-card p-6 rounded-2xl bg-surface-900 border border-surface-800">
+                                <h3 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
+                                    <i data-lucide="pie-chart" class="w-4 h-4 text-red-400"></i> Admin Role Distribution
+                                </h3>
+                                <div class="h-64"><canvas id="sec-chart-admins"></canvas></div>
+                            </div>
+                            <div class="chart-card p-6 rounded-2xl bg-surface-900 border border-surface-800">
+                                <h3 class="text-sm font-bold text-white mb-6 flex items-center gap-2">
+                                    <i data-lucide="bar-chart-2" class="w-4 h-4 text-orange-400"></i> OAuth Consent
+                                    Risks
+                                </h3>
+                                <div class="h-64"><canvas id="sec-chart-consent"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Admin Roles -->
+                    <div id="securitygov-admins" class="sec-page p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header justify-between">
+                                <h3 class="section-title">Directory Role Inventory</h3>
+                                <button onclick="secExportAdminCsv()" class="btn-secondary btn-sm"><i
+                                        data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table" id="sec-admins-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Role Name</th>
+                                            <th>Assigned User</th>
+                                            <th>UPN</th>
+                                            <th>Type</th>
+                                            <th class="text-center">Severity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sec-admins-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Consent Grants -->
+                    <div id="securitygov-consent" class="sec-page p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header justify-between">
+                                <h3 class="section-title">User Consent Grants (OAuth)</h3>
+                                <button onclick="secExportConsentCsv()" class="btn-secondary btn-sm"><i
+                                        data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV</button>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table" id="sec-consent-table">
+                                    <thead>
+                                        <tr>
+                                            <th>App Display Name</th>
+                                            <th>Grant By</th>
+                                            <th>Client ID</th>
+                                            <th>Permissions / Scopes</th>
+                                            <th class="text-center">Risk Level</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sec-consent-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+    </div>
     <div id="view-teamsgov" class="hidden">
         <!-- App Shell -->
         <div class="flex h-screen overflow-hidden">
@@ -2037,6 +2253,11 @@
     <script src="js/teamsgov/demo.js"></script>
     <script src="js/teamsgov/pages/overview.js"></script>
     <script src="js/teamsgov/ui.js"></script>
+
+    <script src="js/securitygov/graph.js"></script>
+    <script src="js/securitygov/demo.js"></script>
+    <script src="js/securitygov/ui.js"></script>
+    <script src="js/securitygov/pages/overview.js"></script>
 
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>

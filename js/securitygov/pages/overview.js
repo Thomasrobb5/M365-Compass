@@ -1,0 +1,172 @@
+/**
+ * Security Governance - Page Renderers
+ */
+
+function secRenderOverview() {
+    console.log("Rendering Security Overview...");
+
+    // 1. Calculate Metrics
+    const globalAdmins = SEC.data.roles.find(r => r.displayName === "Global Administrator")?.members || [];
+    const totalAdmins = SEC.data.roles.reduce((acc, role) => acc + (role.members?.length || 0), 0);
+    const privilegedRoles = SEC.data.roles.filter(r => r.members?.length > 0).length;
+    const totalGrants = SEC.data.grants.length;
+
+    // 2. Update KPIs
+    document.getElementById('sec-kpi-total-admins').textContent = totalAdmins;
+    document.getElementById('sec-kpi-global-admins').textContent = globalAdmins.length;
+    document.getElementById('sec-kpi-privileged-roles').textContent = privilegedRoles;
+    document.getElementById('sec-kpi-total-grants').textContent = totalGrants;
+
+    // 3. Highlight Risk
+    const gaKpi = document.getElementById('sec-kpi-global-admins').parentElement;
+    if (globalAdmins.length > 5) {
+        gaKpi.classList.add('border-red-500/50', 'bg-red-500/5');
+    } else {
+        gaKpi.classList.remove('border-red-500/50', 'bg-red-500/5');
+    }
+
+    // 4. Render Charts
+    renderSecCharts();
+}
+
+function renderSecCharts() {
+    // Admin Distribution
+    const roleLabels = SEC.data.roles.filter(r => r.members?.length > 0).map(r => r.displayName);
+    const roleCounts = SEC.data.roles.filter(r => r.members?.length > 0).map(r => r.members.length);
+
+    if (window.renderAdminDistributionChart) {
+        window.renderAdminDistributionChart(roleLabels, roleCounts);
+    }
+
+    // Consent Risk (Mock logic for risk classification)
+    const riskData = { High: 0, Medium: 0, Low: 0 };
+    SEC.data.grants.forEach(g => {
+        const scope = g.scope.toLowerCase();
+        if (scope.includes('.all') || scope.includes('directory.read') || scope.includes('mail.read')) {
+            riskData.High++;
+        } else if (scope.includes('.readwrite')) {
+            riskData.Medium++;
+        } else {
+            riskData.Low++;
+        }
+    });
+
+    if (window.renderConsentRiskChart) {
+        window.renderConsentRiskChart(Object.keys(riskData), Object.values(riskData));
+    }
+}
+
+function secRenderAdminRoles() {
+    const tbody = document.getElementById('sec-admins-tbody');
+    tbody.innerHTML = '';
+
+    SEC.data.roles.forEach(role => {
+        if (!role.members || role.members.length === 0) return;
+
+        role.members.forEach(member => {
+            const tr = document.createElement('tr');
+            const isExternal = member.userPrincipalName?.includes('#EXT#');
+            const isGlobal = role.displayName === "Global Administrator";
+
+            tr.innerHTML = `
+                <td class="font-bold text-white">${role.displayName}</td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-surface-700 flex items-center justify-center text-[10px] text-white">
+                            ${member.displayName?.charAt(0) || 'U'}
+                        </div>
+                        <span>${member.displayName}</span>
+                    </div>
+                </td>
+                <td class="text-xs text-slate-400">${member.userPrincipalName}</td>
+                <td>
+                    <span class="px-2 py-0.5 rounded text-[10px] ${isExternal ? 'bg-amber-900/40 text-amber-400' : 'bg-blue-900/40 text-blue-400'}">
+                        ${isExternal ? 'Guest / External' : 'Internal'}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isGlobal ? 'bg-red-900/50 text-red-400 animate-pulse' : 'bg-surface-800 text-slate-500'}">
+                        ${isGlobal ? 'CRITICAL' : 'Low'}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+function secRenderConsentGrants() {
+    const tbody = document.getElementById('sec-consent-tbody');
+    tbody.innerHTML = '';
+
+    SEC.data.grants.forEach(g => {
+        const tr = document.createElement('tr');
+        const scope = g.scope.toLowerCase();
+        let risk = 'Low';
+        let riskClass = 'bg-surface-800 text-slate-400';
+
+        if (scope.includes('.all') || scope.includes('directory.read') || scope.includes('mail.read')) {
+            risk = 'HIGH';
+            riskClass = 'bg-red-900/40 text-red-400';
+        } else if (scope.includes('.readwrite')) {
+            risk = 'Medium';
+            riskClass = 'bg-amber-900/40 text-amber-400';
+        }
+
+        tr.innerHTML = `
+            <td class="font-bold text-white">${g.displayName || 'Unknown App'}</td>
+            <td class="text-xs text-slate-400">${g.consentType === 'AllPrincipals' ? 'Admin (Tenant-wide)' : 'User'}</td>
+            <td class="text-[10px] font-mono text-slate-500">${g.clientId}</td>
+            <td class="max-w-xs truncate text-xs text-slate-400" title="${g.scope}">${g.scope}</td>
+            <td class="text-center">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${riskClass}">
+                    ${risk}
+                </span>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function secExportAdminCsv() {
+    const headers = ["Role", "Name", "UPN", "Type", "Severity"];
+    const rows = [];
+
+    SEC.data.roles.forEach(role => {
+        role.members?.forEach(m => {
+            rows.push([
+                role.displayName,
+                m.displayName,
+                m.userPrincipalName,
+                m.userPrincipalName.includes('#EXT#') ? 'External' : 'Internal',
+                role.displayName === "Global Administrator" ? 'CRITICAL' : 'Low'
+            ]);
+        });
+    });
+
+    if (typeof exportToCsv === 'function') {
+        exportToCsv("M365Compass_AdminRoles.csv", [headers, ...rows]);
+    }
+}
+
+function secExportConsentCsv() {
+    const headers = ["App Name", "Consent Type", "Client ID", "Scopes", "Risk"];
+    const rows = SEC.data.grants.map(g => {
+        const scope = g.scope.toLowerCase();
+        let risk = 'Low';
+        if (scope.includes('.all') || scope.includes('directory.read') || scope.includes('mail.read')) risk = 'HIGH';
+        else if (scope.includes('.readwrite')) risk = 'Medium';
+
+        return [
+            g.displayName,
+            g.consentType,
+            g.clientId,
+            g.scope,
+            risk
+        ];
+    });
+
+    if (typeof exportToCsv === 'function') {
+        exportToCsv("M365Compass_ConsentGrants.csv", [headers, ...rows]);
+    }
+}
