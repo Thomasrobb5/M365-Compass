@@ -24,11 +24,26 @@ async function secLoadGraphData(forceRefresh = false) {
         const grantsResponse = await graphFetch('https://graph.microsoft.com/v1.0/oauth2PermissionGrants');
         const grants = grantsResponse.value || [];
 
-        // 4. Transform and update state
+        // 4. Fetch Service Principals for Display Names
+        // Using graphFetchAll to handle potentially large lists of apps
+        let sps = [];
+        try {
+            sps = await graphFetchAll('https://graph.microsoft.com/v1.0/servicePrincipals?$select=id,displayName');
+        } catch (e) {
+            console.warn("Failed to fetch Service Principals, app names will be generic", e);
+        }
+
+        // 5. Transform and update state
         SEC.data.roles = roles;
         SEC.data.grants = grants;
 
-        // 5. Cache result
+        // Build map for fast lookup
+        SEC.data.servicePrincipals = {};
+        sps.forEach(sp => {
+            if (sp.id) SEC.data.servicePrincipals[sp.id] = sp.displayName;
+        });
+
+        // 6. Cache result
         await localforage.setItem('tg_sec_data', {
             timestamp: Date.now(),
             data: SEC.data

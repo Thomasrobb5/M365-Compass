@@ -41,7 +41,7 @@ function renderSecCharts() {
     // Consent Risk (Mock logic for risk classification)
     const riskData = { High: 0, Medium: 0, Low: 0 };
     SEC.data.grants.forEach(g => {
-        const scope = g.scope.toLowerCase();
+        const scope = (g.scope || '').toLowerCase();
         if (scope.includes('.all') || scope.includes('directory.read') || scope.includes('mail.read')) {
             riskData.High++;
         } else if (scope.includes('.readwrite')) {
@@ -73,12 +73,11 @@ function secRenderAdminRoles(filter = '', roleId = null) {
             const isGlobal = role.displayName === "Global Administrator";
 
             // Filter logic (Search keyword)
-            // BUG FIX: We search by role, name, or UPN. 
-            // If the user matches, this row is shown. Since we iterate ROLES first,
-            // a user in 3 roles will show up 3 times if they match the search.
-            if (q && !role.displayName.toLowerCase().includes(q) &&
-                !member.displayName.toLowerCase().includes(q) &&
-                !member.userPrincipalName.toLowerCase().includes(q)) {
+            const roleMatch = (role.displayName || '').toLowerCase().includes(q);
+            const nameMatch = (member.displayName || '').toLowerCase().includes(q);
+            const upnMatch = (member.userPrincipalName || '').toLowerCase().includes(q);
+
+            if (q && !roleMatch && !nameMatch && !upnMatch) {
                 return;
             }
 
@@ -127,8 +126,8 @@ function secRenderRoleCards() {
 
         const card = document.createElement('div');
         card.className = `p-4 rounded-xl border transition-all cursor-pointer group flex flex-col justify-between h-24 ${isActive
-                ? 'bg-red-500/10 border-red-500 shadow-lg shadow-red-900/20'
-                : 'bg-surface-900 border-surface-800 hover:border-surface-600'
+            ? 'bg-red-500/10 border-red-500 shadow-lg shadow-red-900/20'
+            : 'bg-surface-900 border-surface-800 hover:border-surface-600'
             }`;
 
         card.onclick = () => secApplyRoleFilter(role.id, role.displayName);
@@ -184,8 +183,10 @@ function secRenderGlobalAdmins(filter = '') {
         const isExternal = member.userPrincipalName?.includes('#EXT#');
 
         // Filter logic
-        if (q && !member.displayName.toLowerCase().includes(q) &&
-            !member.userPrincipalName.toLowerCase().includes(q)) {
+        const nameMatch = (member.displayName || '').toLowerCase().includes(q);
+        const upnMatch = (member.userPrincipalName || '').toLowerCase().includes(q);
+
+        if (q && !nameMatch && !upnMatch) {
             return;
         }
 
@@ -221,11 +222,14 @@ function secRenderConsentGrants(filter = '') {
     const q = filter.toLowerCase();
 
     SEC.data.grants.forEach(g => {
-        const scope = g.scope.toLowerCase();
-        const appName = (g.displayName || 'Unknown App').toLowerCase();
+        const scope = (g.scope || '').toLowerCase();
+        // Lookup display name from SP map using clientId
+        const spName = SEC.data.servicePrincipals[g.clientId] || g.displayName || 'Unknown App';
+        const appNameLower = spName.toLowerCase();
+        const clientId = (g.clientId || '').toLowerCase();
 
         // Filter logic
-        if (q && !appName.includes(q) && !scope.includes(q) && !g.clientId.toLowerCase().includes(q)) {
+        if (q && !appNameLower.includes(q) && !scope.includes(q) && !clientId.includes(q)) {
             return;
         }
 
@@ -242,7 +246,7 @@ function secRenderConsentGrants(filter = '') {
         }
 
         tr.innerHTML = `
-            <td class="font-bold text-white">${g.displayName || 'Unknown App'}</td>
+            <td class="font-bold text-white">${spName}</td>
             <td class="text-xs text-slate-400">${g.consentType === 'AllPrincipals' ? 'Admin (Tenant-wide)' : 'User'}</td>
             <td class="text-[10px] font-mono text-slate-500">${g.clientId}</td>
             <td class="max-w-xs truncate text-xs text-slate-400" title="${g.scope}">${g.scope}</td>

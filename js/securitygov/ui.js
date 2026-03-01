@@ -5,7 +5,8 @@
 const SEC = {
     data: {
         roles: [],
-        grants: []
+        grants: [],
+        servicePrincipals: {} // Map of clientId -> displayName
     },
     state: {
         isLoaded: false,

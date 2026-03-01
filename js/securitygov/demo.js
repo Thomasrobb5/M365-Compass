@@ -84,4 +84,11 @@ async function secLoadDemoData() {
             displayName: "Meeting Scheduler"
         }
     ];
+
+    SEC.data.servicePrincipals = {
+        "00001111-2222-3333-4444-555566667777": "AI Email Assistant (Free)",
+        "88889999-0000-1111-2222-333344445555": "Smart PDF Converter Pro",
+        "aaaa-bbbb-cccc-dddd-eeeeffff": "M365 Security Audit Tool",
+        "cccc-dddd-eeee-ffff-00001111": "Meeting Scheduler"
+    };
 }
