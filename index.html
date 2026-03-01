@@ -1332,19 +1332,21 @@
                     <div class="space-y-3 relative z-10">
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-slate-500">API Connection</span>
-                            <span class="text-emerald-400 font-medium flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="hub-widget-api-status"
+                                class="text-emerald-400 font-medium flex items-center gap-1.5">
+                                <span id="hub-widget-api-dot"
+                                    class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                                 Connected
                             </span>
                         </div>
                         <div class="flex items-center justify-between text-xs border-t border-surface-700/50 pt-3">
                             <span class="text-slate-500">Local Cache Data</span>
-                            <span class="text-slate-300 font-medium">8.4 MB</span>
+                            <span id="hub-widget-cache-size" class="text-slate-300 font-medium">--</span>
                         </div>
                         <div class="flex items-center justify-between text-xs border-t border-surface-700/50 pt-3">
                             <span class="text-slate-500">Tenant Target</span>
                             <span class="text-slate-300 font-medium max-w-[120px] truncate"
-                                id="hub-widget-tenant-name">contoso.com</span>
+                                id="hub-widget-tenant-name">--</span>
                         </div>
                     </div>
                 </div>

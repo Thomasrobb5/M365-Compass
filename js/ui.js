@@ -66,8 +66,71 @@ function showHub() {
         if (LG.isDemoMode) hubOrg.textContent = 'Contoso Demo Corp';
         else if (LG.data.org) hubOrg.textContent = LG.data.org.displayName;
     }
+
+    // Update Platform Status Widget
+    updateHubPlatformWidget();
 }
 window.showHub = showHub;
+
+async function updateHubPlatformWidget() {
+    // 1. Connection Status
+    const apiEl = document.getElementById('hub-widget-api-status');
+    const apiDot = document.getElementById('hub-widget-api-dot');
+
+    if (LG.isDemoMode) {
+        if (apiEl) apiEl.textContent = 'Demo Mode';
+        if (apiEl) apiEl.className = 'text-amber-400 font-medium flex items-center gap-1.5';
+        if (apiDot) apiDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
+    } else if (LG.accessToken) {
+        if (apiEl) apiEl.textContent = 'Connected (Live)';
+        if (apiEl) apiEl.className = 'text-emerald-400 font-medium flex items-center gap-1.5';
+        if (apiDot) apiDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
+    } else {
+        if (apiEl) apiEl.textContent = 'Disconnected';
+        if (apiEl) apiEl.className = 'text-slate-400 font-medium flex items-center gap-1.5';
+        if (apiDot) apiDot.className = 'w-1.5 h-1.5 rounded-full bg-slate-500';
+    }
+
+    // 2. Tenant Target
+    const tenantEl = document.getElementById('hub-widget-tenant-name');
+    if (tenantEl) {
+        if (LG.isDemoMode) {
+            tenantEl.textContent = 'contoso.com (Demo)';
+        } else if (LG.account && LG.account.username) {
+            // Extract domain from username if we don't have the explicit tenant name yet
+            const domain = LG.account.username.split('@')[1];
+            tenantEl.textContent = domain || 'Unknown Tenant';
+        } else {
+            tenantEl.textContent = 'Not Authenticated';
+        }
+    }
+
+    // 3. Estimate Cache Size
+    const cacheEl = document.getElementById('hub-widget-cache-size');
+    if (cacheEl) {
+        try {
+            const keys = await localforage.keys();
+            let totalBytes = 0;
+            for (const key of keys) {
+                const item = await localforage.getItem(key);
+                if (item) {
+                    const str = typeof item === 'string' ? item : JSON.stringify(item);
+                    totalBytes += new Blob([str]).size;
+                }
+            }
+            if (totalBytes === 0) {
+                cacheEl.textContent = 'Empty';
+            } else if (totalBytes < 1024 * 1024) {
+                cacheEl.textContent = (totalBytes / 1024).toFixed(1) + ' KB';
+            } else {
+                cacheEl.textContent = (totalBytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+        } catch (e) {
+            console.error("Failed to calculate cache size", e);
+            cacheEl.textContent = 'Unknown';
+        }
+    }
+}
 
 async function launchLicenceGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
