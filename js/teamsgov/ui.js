@@ -30,19 +30,18 @@ function launchTeamsGovernance() {
     }
 }
 
-async function initTeamsGovernance() {
-    console.log("Initializing Teams Governance module...");
+async function initTeamsGovernance(forceRefresh = false) {
+    console.log("Initializing Teams Governance module, forceRefresh:", forceRefresh);
     tgShowLoading("Scanning Microsoft Teams", "Please wait while we gather workspace data...");
 
     try {
         if (LG.isDemoMode) {
             await tgLoadDemoData();
         } else {
-            await tgLoadGraphData();
+            await tgLoadGraphData(forceRefresh);
         }
 
         // Render initial page
-        await tgRenderOverview();
         showTgPage('teamsgov-overview');
 
         tgState.isLoaded = true;
@@ -65,6 +64,12 @@ function showTgPage(pageId) {
 
     document.querySelectorAll('.tg-nav-item').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.tg-nav-item[data-tgpage="${pageId}"]`)?.classList.add('active');
+
+    // Render data based on tab
+    if (pageId === 'teamsgov-overview') tgRenderOverview();
+    if (pageId === 'teamsgov-all') tgRenderAllTeams();
+    if (pageId === 'teamsgov-orphaned') tgRenderOrphanedTeams();
+    if (pageId === 'teamsgov-inactive') tgRenderInactiveTeams();
 
     tgState.currentPage = pageId;
 }
@@ -119,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Refresh
     document.getElementById('teamsgov-refresh-btn')?.addEventListener('click', () => {
-        initTeamsGovernance();
+        initTeamsGovernance(true);
     });
 
 });

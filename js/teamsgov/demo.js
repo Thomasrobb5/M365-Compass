@@ -33,12 +33,18 @@ function generateDemoTeams() {
 
         const memberCount = Math.floor(Math.random() * 50) + 5;
 
+        // Random inactivity between 0 and 200 days
+        const daysInactive = Math.floor(Math.random() * 200);
+        const lastAct = new Date();
+        lastAct.setDate(lastAct.getDate() - daysInactive);
+
         list.push({
             id: `demo-team-${i}`,
             displayName: name,
             description: `Demo description for ${name}`,
             visibility: visibility,
             createdDateTime: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
+            lastActivityDate: lastAct.toISOString(),
             owners: ownerCount,
             guests: guestCount,
             members: memberCount,

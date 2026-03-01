@@ -1509,6 +1509,15 @@
                     <button class="tg-nav-item nav-item active" data-tgpage="teamsgov-overview">
                         <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span>
                     </button>
+                    <button class="tg-nav-item nav-item" data-tgpage="teamsgov-all">
+                        <i data-lucide="list" class="w-4 h-4 shrink-0"></i><span>All Teams</span>
+                    </button>
+                    <button class="tg-nav-item nav-item" data-tgpage="teamsgov-orphaned">
+                        <i data-lucide="user-x" class="w-4 h-4 shrink-0"></i><span>Orphaned Teams</span>
+                    </button>
+                    <button class="tg-nav-item nav-item" data-tgpage="teamsgov-inactive">
+                        <i data-lucide="clock" class="w-4 h-4 shrink-0"></i><span>Inactive Teams</span>
+                    </button>
                 </nav>
                 <div class="px-3 pb-4 border-t border-surface-800 pt-3 space-y-2">
                     <button id="teamsgov-refresh-btn" class="nav-item">
@@ -1633,17 +1642,21 @@
                         </div>
 
 
-                        <!-- Data Table for Teams -->
-                        <div class="content-card mt-5">
+                    </section>
+
+                    <!-- All Teams Section -->
+                    <section id="teamsgov-all" class="tg-page-section p-6 hidden">
+                        <div class="content-card">
                             <div class="content-card-header flex items-center justify-between">
-                                <h3 class="section-title"><i data-lucide="list" class="w-4 h-4 text-blue-400"></i>
-                                    All Teams</h3>
+                                <h3 class="section-title"><i data-lucide="list" class="w-4 h-4 text-blue-400"></i> All
+                                    Teams</h3>
                                 <div class="flex items-center gap-2">
                                     <div class="relative"><i data-lucide="search"
                                             class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
-                                            id="tg-search" type="text" placeholder="Search teams..."
-                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams()" /></div>
-                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv()"><i
+                                            id="tg-search-all" type="text" placeholder="Search teams..."
+                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams('all')" />
+                                    </div>
+                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv('all')"><i
                                             data-lucide="download" class="w-3.5 h-3.5"></i> CSV</button>
                                 </div>
                             </div>
@@ -1658,16 +1671,171 @@
                                             <th class="text-right">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tg-teams-tbody"></tbody>
+                                    <tbody id="tg-teams-all-tbody"></tbody>
                                 </table>
                             </div>
                         </div>
+                    </section>
 
+                    <!-- Orphaned Teams Section -->
+                    <section id="teamsgov-orphaned" class="tg-page-section p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header flex items-center justify-between">
+                                <h3 class="section-title"><i data-lucide="user-x" class="w-4 h-4 text-amber-400"></i>
+                                    Orphaned Teams</h3>
+                                <div class="flex items-center gap-2">
+                                    <div class="relative"><i data-lucide="search"
+                                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
+                                            id="tg-search-orphaned" type="text" placeholder="Search orphaned teams..."
+                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams('orphaned')" />
+                                    </div>
+                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv('orphaned')"><i
+                                            data-lucide="download" class="w-3.5 h-3.5"></i> CSV</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Team Name</th>
+                                            <th>Visibility</th>
+                                            <th class="text-center">Owners</th>
+                                            <th class="text-center">Guests</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tg-teams-orphaned-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Inactive Teams Section -->
+                    <section id="teamsgov-inactive" class="tg-page-section p-6 hidden">
+                        <div class="content-card">
+                            <div class="content-card-header flex items-center justify-between">
+                                <h3 class="section-title"><i data-lucide="clock" class="w-4 h-4 text-rose-400"></i>
+                                    Inactive Teams</h3>
+                                <div class="flex w-full items-center justify-end gap-5">
+                                    <div
+                                        class="flex items-center gap-3 bg-surface-800 px-4 py-1.5 rounded-lg border border-surface-700">
+                                        <span class="text-slate-400 text-sm font-medium">Inactive ></span>
+                                        <input type="range" id="tg-inactive-slider" min="30" max="180" step="30"
+                                            value="90" class="w-24 accent-blue-500 cursor-pointer"
+                                            oninput="document.getElementById('tg-inactive-label').innerText = this.value + ' days'"
+                                            onchange="tgFilterTeams('inactive')">
+                                        <span id="tg-inactive-label"
+                                            class="text-white text-sm font-bold min-w-[3rem]">90 days</span>
+                                    </div>
+                                    <div class="relative"><i data-lucide="search"
+                                            class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i><input
+                                            id="tg-search-inactive" type="text" placeholder="Search inactive teams..."
+                                            class="input-field pl-9 text-sm w-56" oninput="tgFilterTeams('inactive')" />
+                                    </div>
+                                    <button class="btn-secondary btn-sm" onclick="tgExportTeamsCsv('inactive')"><i
+                                            data-lucide="download" class="w-3.5 h-3.5"></i> CSV</button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Team Name</th>
+                                            <th>Visibility</th>
+                                            <th>Last Activity</th>
+                                            <th class="text-center">Owners</th>
+                                            <th class="text-center">Guests</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tg-teams-inactive-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </section>
                 </main>
             </div>
         </div><!-- /.flex.h-screen -->
     </div><!-- /#view-teamsgov -->
+
+    <!-- Team Details Modal -->
+    <div id="tg-details-modal"
+        class="fixed inset-0 z-[8500] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden animate-fade-in">
+        <div
+            class="bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between p-6 border-b border-surface-700 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-700 flex items-center justify-center shadow-lg">
+                        <span class="text-white font-bold" id="tg-detail-avatar">T</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2" id="tg-detail-name">Team Name
+                            <span id="tg-detail-badge"
+                                class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-700 text-slate-300">Private</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5" id="tg-detail-id">Group ID: 0000-0000-0000</p>
+                    </div>
+                </div>
+                <button onclick="tgCloseTeamDetailsModal()"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-surface-700 transition">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="overflow-y-auto flex-1 p-6 space-y-6">
+                <!-- Overview Stats -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div
+                        class="bg-surface-900 border border-surface-700 rounded-xl p-4 flex flex-col items-center justify-center">
+                        <i data-lucide="user-plus" class="w-5 h-5 text-emerald-400 mb-1"></i>
+                        <span class="text-2xl font-bold text-white" id="tg-detail-guests">0</span>
+                        <span class="text-xs text-slate-400">Guests</span>
+                    </div>
+                    <div
+                        class="bg-surface-900 border border-surface-700 rounded-xl p-4 flex flex-col items-center justify-center">
+                        <i data-lucide="users" class="w-5 h-5 text-blue-400 mb-1"></i>
+                        <span class="text-2xl font-bold text-white" id="tg-detail-members">0</span>
+                        <span class="text-xs text-slate-400">Total Members</span>
+                    </div>
+                    <div
+                        class="bg-surface-900 border border-surface-700 rounded-xl p-4 flex flex-col items-center justify-center">
+                        <i data-lucide="shield" class="w-5 h-5 text-amber-400 mb-1"></i>
+                        <span class="text-2xl font-bold text-white" id="tg-detail-owners">0</span>
+                        <span class="text-xs text-slate-400">Owners</span>
+                    </div>
+                </div>
+
+                <!-- Descriptive Information -->
+                <div>
+                    <h4 class="text-sm font-semibold text-slate-300 mb-2">Description</h4>
+                    <div class="bg-surface-900 rounded-lg p-3 border border-surface-800 text-sm text-slate-400"
+                        id="tg-detail-desc">
+                        No description provided.
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-300 mb-2">Created</h4>
+                        <div class="flex items-center gap-2 text-sm text-slate-400">
+                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                            <span id="tg-detail-created">Unknown</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-slate-300 mb-2">Last Activity</h4>
+                        <div class="flex items-center gap-2 text-sm text-slate-400">
+                            <i data-lucide="activity" class="w-4 h-4"></i>
+                            <span id="tg-detail-activity">Unknown</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-surface-700 bg-surface-900 flex justify-end">
+                <button class="btn-primary" onclick="tgCloseTeamDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Create Team Modal -->
     <div id="tg-create-modal"

@@ -6,10 +6,9 @@ window.tgFilteredTeams = [];
 
 async function tgRenderOverview() {
     const teams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
-    window.tgFilteredTeams = [...teams];
 
+    // Overview only needs KPIs and Charts now
     tgCalculateKpis(teams);
-    tgRenderTable(teams);
 
     // Render Charts
     if (typeof renderTeamsVisibilityChart === 'function') renderTeamsVisibilityChart(teams);
@@ -57,12 +56,12 @@ function escapeHtml(unsafe) {
 // Table Rendering & Filtering
 // ----------------------------------------------------------------------------
 
-function tgRenderTable(teams) {
-    const tbody = document.getElementById('tg-teams-tbody');
+function tgRenderTable(teams, tbodyId) {
+    const tbody = document.getElementById(tbodyId);
     if (!tbody) return;
 
     if (teams.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-slate-500 py-8">No Teams found matching criteria.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-slate-500 py-8">No Teams found matching criteria.</td></tr>`;
         return;
     }
 
@@ -72,17 +71,24 @@ function tgRenderTable(teams) {
         const guestClass = t.guests > 0 ? "text-emerald-400 font-bold" : "text-slate-400";
         const visClass = t.visibility.toLowerCase() === 'public' ? "text-violet-400" : "text-slate-400";
 
+        let activityCol = '';
+        if (tbodyId === 'tg-teams-inactive-tbody') {
+            const actDate = t.lastActivityDate ? new Date(t.lastActivityDate).toLocaleDateString() : 'Unknown';
+            activityCol = `<td class="text-slate-400 text-sm whitespace-nowrap">${actDate}</td>`;
+        }
+
         html += `
-            <tr class="hover:bg-surface-800/50 transition-colors">
+            <tr class="hover:bg-surface-800/50 transition-colors cursor-pointer" onclick="tgOpenTeamDetailsModal('${t.id}')">
                 <td>
                     <div class="font-medium text-white">${escapeHtml(t.displayName)}</div>
                     ${t.description ? `<div class="text-[10px] text-slate-500 truncate max-w-xs mt-0.5">${escapeHtml(t.description)}</div>` : ''}
                 </td>
-                <td class="${visClass}">${escapeHtml(t.visibility)}</td>
+                <td class="${visClass} capitalize">${escapeHtml(t.visibility)}</td>
+                ${activityCol}
                 <td class="text-center ${ownerClass}">${t.owners}</td>
                 <td class="text-center ${guestClass}">${t.guests}</td>
                 <td class="text-right">
-                    <button class="text-xs text-brand-400 hover:text-brand-300" onclick="alert('Team details view coming soon')">View</button>
+                    <button class="text-xs text-brand-400 hover:text-brand-300" onclick="event.stopPropagation(); tgOpenTeamDetailsModal('${t.id}')">View</button>
                 </td>
             </tr>
         `;
@@ -91,35 +97,127 @@ function tgRenderTable(teams) {
     tbody.innerHTML = html;
 }
 
-function tgFilterTeams() {
-    const q = document.getElementById('tg-search').value.toLowerCase();
-    const source = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
+async function tgRenderAllTeams() {
+    const teams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
+    window.tgFilteredTeamsAll = [...teams];
+    tgRenderTable(teams, 'tg-teams-all-tbody');
+}
+
+async function tgRenderOrphanedTeams() {
+    const teams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
+    window.tgFilteredTeamsOrphaned = teams.filter(t => t.owners === 0);
+    tgRenderTable(window.tgFilteredTeamsOrphaned, 'tg-teams-orphaned-tbody');
+}
+
+async function tgRenderInactiveTeams() {
+    const teams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
+    const days = parseInt(document.getElementById('tg-inactive-slider').value) || 90;
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    window.tgFilteredTeamsInactive = teams.filter(t => {
+        if (!t.lastActivityDate) return true; // No activity recorded
+        const lastAct = new Date(t.lastActivityDate);
+        return lastAct < cutoffDate;
+    });
+    tgRenderTable(window.tgFilteredTeamsInactive, 'tg-teams-inactive-tbody');
+}
+
+function tgFilterTeams(tab) {
+    let q = '';
+    let source = [];
+    let stateKey = '';
+    let tbodyId = '';
+
+    const allTeams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
+
+    if (tab === 'all') {
+        q = document.getElementById('tg-search-all').value.toLowerCase();
+        source = allTeams;
+        stateKey = 'tgFilteredTeamsAll';
+        tbodyId = 'tg-teams-all-tbody';
+    }
+    else if (tab === 'orphaned') {
+        q = document.getElementById('tg-search-orphaned').value.toLowerCase();
+        source = allTeams.filter(t => t.owners === 0);
+        stateKey = 'tgFilteredTeamsOrphaned';
+        tbodyId = 'tg-teams-orphaned-tbody';
+    }
+    else if (tab === 'inactive') {
+        q = document.getElementById('tg-search-inactive').value.toLowerCase();
+        const days = parseInt(document.getElementById('tg-inactive-slider').value) || 90;
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        source = allTeams.filter(t => {
+            if (!t.lastActivityDate) return true;
+            return new Date(t.lastActivityDate) < cutoffDate;
+        });
+        stateKey = 'tgFilteredTeamsInactive';
+        tbodyId = 'tg-teams-inactive-tbody';
+    }
 
     if (!q) {
-        window.tgFilteredTeams = [...source];
+        window[stateKey] = [...source];
     } else {
-        window.tgFilteredTeams = source.filter(t =>
+        window[stateKey] = source.filter(t =>
             t.displayName.toLowerCase().includes(q) ||
             (t.description && t.description.toLowerCase().includes(q))
         );
     }
 
-    tgRenderTable(window.tgFilteredTeams);
+    tgRenderTable(window[stateKey], tbodyId);
 }
 
 // ----------------------------------------------------------------------------
 // CSV Export
 // ----------------------------------------------------------------------------
-function tgExportTeamsCsv() {
-    exportToCsv(window.tgFilteredTeams, 'teams-governance-export.csv', [
+function tgExportTeamsCsv(tab) {
+    let dataToExport = [];
+    let filename = 'teams-export.csv';
+
+    if (tab === 'all') { dataToExport = window.tgFilteredTeamsAll; filename = 'all-teams-export.csv'; }
+    if (tab === 'orphaned') { dataToExport = window.tgFilteredTeamsOrphaned; filename = 'orphaned-teams-export.csv'; }
+    if (tab === 'inactive') { dataToExport = window.tgFilteredTeamsInactive; filename = 'inactive-teams-export.csv'; }
+
+    exportToCsv(dataToExport, filename, [
         { label: 'Team', value: 'displayName' },
         { label: 'Visibility', value: 'visibility' },
+        { label: 'Last Activity', value: 'lastActivityDate' },
         { label: 'Owners Count', value: 'owners' },
         { label: 'Members', value: 'members' },
         { label: 'Guests', value: 'guests' },
         { label: 'Description', value: 'description' },
         { label: 'Created Date', value: 'createdDateTime' }
     ]);
+}
+
+// ----------------------------------------------------------------------------
+// Team Details Modal
+// ----------------------------------------------------------------------------
+function tgOpenTeamDetailsModal(teamId) {
+    const teams = LG.isDemoMode ? window.tgDemoData.teams : window.tgData.teams;
+    const t = teams.find(x => x.id === teamId);
+    if (!t) return;
+
+    document.getElementById('tg-detail-avatar').textContent = t.displayName.substring(0, 2).toUpperCase();
+    document.getElementById('tg-detail-name').innerHTML = `${escapeHtml(t.displayName)} <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-700 ${t.visibility.toLowerCase() === 'public' ? 'text-violet-400' : 'text-slate-300'} capitalize">${escapeHtml(t.visibility)}</span>`;
+    document.getElementById('tg-detail-id').textContent = `Group ID: ${t.id}`;
+
+    document.getElementById('tg-detail-guests').textContent = t.guests || 0;
+    document.getElementById('tg-detail-members').textContent = t.members || 0;
+    document.getElementById('tg-detail-owners').textContent = t.owners || 0;
+
+    document.getElementById('tg-detail-desc').textContent = t.description || 'No description provided.';
+
+    document.getElementById('tg-detail-created').textContent = t.createdDateTime ? new Date(t.createdDateTime).toLocaleDateString() : 'Unknown';
+    document.getElementById('tg-detail-activity').textContent = t.lastActivityDate ? new Date(t.lastActivityDate).toLocaleDateString() : 'Unknown';
+
+    document.getElementById('tg-details-modal').classList.remove('hidden');
+    lucide.createIcons();
+}
+
+function tgCloseTeamDetailsModal() {
+    document.getElementById('tg-details-modal').classList.add('hidden');
 }
 
 // ----------------------------------------------------------------------------
@@ -204,7 +302,7 @@ async function tgSubmitCreateTeam() {
         // Refresh overview
         setTimeout(() => {
             tgCloseCreateTeamModal();
-            initTeamsGovernance(); // reloads data
+            initTeamsGovernance(true); // reloads data by bypassing cache
         }, 2000);
 
     } catch (err) {

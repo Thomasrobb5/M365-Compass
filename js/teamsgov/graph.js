@@ -3,29 +3,89 @@
 // ============================================================================
 
 window.tgData = {
-    teams: [] // List of all Teams
+    teams: [], // List of all Teams
+    cacheKey: 'tg_data_cache',
+    cacheTTL: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
+
+// ----------------------------------------------------------------------------
+// Cache Logic (IndexedDB via localforage)
+// ----------------------------------------------------------------------------
+async function tgSaveCache() {
+    try {
+        const payload = { ts: Date.now(), teams: window.tgData.teams };
+        await localforage.setItem(window.tgData.cacheKey, payload);
+    } catch (e) {
+        console.error('Teams Gov IndexedDB cache write failed:', e);
+    }
+}
+
+async function tgLoadCache() {
+    try {
+        const data = await localforage.getItem(window.tgData.cacheKey);
+        if (!data) return null;
+        const { ts, teams } = data;
+        if (!teams || !teams.length) return null;
+        const age = Date.now() - ts;
+        return { teams, ageMs: age, fresh: age < window.tgData.cacheTTL, ts };
+    } catch (e) {
+        console.error('Teams Gov IndexedDB cache read failed:', e);
+        return null;
+    }
+}
+
+async function tgClearCache() {
+    try {
+        await localforage.removeItem(window.tgData.cacheKey);
+    } catch (e) { console.error('Teams Gov IndexedDB cache clear failed:', e); }
+}
 
 // ----------------------------------------------------------------------------
 // Core Fetch logic
 // ----------------------------------------------------------------------------
 
-async function tgLoadGraphData() {
+async function tgLoadGraphData(forceRefresh = false) {
     console.log("Loading Teams via Microsoft Graph...");
-    tgUpdateLoading(10, "Fetching Teams list...");
+    tgUpdateLoading(5, "Checking local cache...");
     window.tgData.teams = [];
 
     if (!LG.msalInstance.getAllAccounts().length) {
         throw new Error("No active MSAL account found.");
     }
 
-    try {
-        // Step 1: Fetch all M365 Groups which are provisioned as Teams
-        // The endpoint GET /groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')
-        // We also need owners and members counts if possible, but Graph often requires separate calls for details
-        // We'll fetch the core list, then iterate to get details (owners/members)
+    if (!forceRefresh) {
+        const cached = await tgLoadCache();
+        if (cached && cached.fresh) {
+            console.log("Teams Governance using cached data from " + new Date(cached.ts).toLocaleString());
+            window.tgData.teams = cached.teams;
+            tgUpdateLoading(100, "Loaded from cache.");
+            return;
+        }
+    }
 
-        // This query requires Group.Read.All or Team.ReadBasic.All
+    try {
+        tgUpdateLoading(10, "Fetching Teams list...");
+
+        // Step 1: Fetch Teams Activity Report to get lastActivityDate
+        // This report requires Reports.Read.All
+        let activityMap = new Map();
+        try {
+            tgUpdateLoading(15, "Fetching Team Activity report...");
+            const activityUrl = "https://graph.microsoft.com/v1.0/reports/getTeamsTeamActivityDetail(period='D180')?$format=application/json";
+            let actData = await graphFetch(activityUrl);
+            if (actData && actData.value) {
+                actData.value.forEach(a => {
+                    if (a.teamId && a.lastActivityDate) {
+                        activityMap.set(a.teamId, a.lastActivityDate);
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn("Could not fetch Teams activity report, Activity dates will be unavailable. Make sure 'Reports.Read.All' is granted.");
+        }
+
+        // Step 2: Fetch all M365 Groups which are provisioned as Teams
+        // The endpoint GET /groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')
         let groupsUrl = "https://graph.microsoft.com/v1.0/groups?$filter=resourceProvisioningOptions/Any(x:x eq 'Team')&$select=id,displayName,description,visibility,createdDateTime";
         let allGroups = [];
 
@@ -40,8 +100,7 @@ async function tgLoadGraphData() {
 
         tgUpdateLoading(40, `Found ${allGroups.length} Teams. Analysing owners and guests...`);
 
-        // Step 2: For each team, get owner and member counts.
-        // In a real production scale (>10k teams), we'd batch this. For M365 Compass, we'll do promise pooling.
+        // Step 3: For each team, get owner and member counts.
 
         const POOL_SIZE = 5; // To avoid throttling
         let completed = 0;
@@ -75,6 +134,7 @@ async function tgLoadGraphData() {
                     description: group.description,
                     visibility: group.visibility || 'Unknown',
                     createdDateTime: group.createdDateTime,
+                    lastActivityDate: activityMap.get(group.id) || null,
                     owners: owners.length,
                     members: members.length,
                     guests: guests.length,
@@ -91,6 +151,9 @@ async function tgLoadGraphData() {
         }
 
         console.log("Teams Governance data loaded:", window.tgData.teams);
+
+        // Save to cache
+        await tgSaveCache();
 
     } catch (err) {
         console.error("Error loading Teams data from Graph:", err);
