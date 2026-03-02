@@ -51,6 +51,7 @@ function showHub() {
     document.getElementById('view-teamsgov').classList.add('hidden');
     document.getElementById('view-securitygov').classList.add('hidden');
     document.getElementById('view-identitygov').classList.add('hidden');
+    document.getElementById('view-azcostgov')?.classList.add('hidden');
 
     // Update hub user info
     const hubUser = document.getElementById('hub-user-info');
@@ -210,6 +211,21 @@ async function launchIdentityGovernance() {
 }
 window.launchIdentityGovernance = launchIdentityGovernance;
 
+async function launchAzureCosts() {
+    document.getElementById('view-hub').classList.add('hidden');
+    document.getElementById('view-azcostgov').classList.remove('hidden');
+
+    if (typeof azInitUI === 'function') await azInitUI();
+    if (typeof azNavigateTo === 'function') azNavigateTo('azcostgov-overview');
+
+    if (LG.isDemoMode) {
+        if (typeof azLoadDemoData === 'function') await azLoadDemoData();
+    } else if (LG.accessToken) {
+        if (typeof azLoadGraphData === 'function') await azLoadGraphData();
+    }
+}
+window.launchAzureCosts = launchAzureCosts;
+
 async function launchAppGovernance() {
     document.getElementById('view-hub').classList.add('hidden');
     document.getElementById('view-licence').classList.add('hidden');
@@ -256,6 +272,7 @@ function backToHub() {
     document.getElementById('view-devicegov').classList.add('hidden');
     document.getElementById('view-teamsgov').classList.add('hidden');
     document.getElementById('view-securitygov').classList.add('hidden');
+    document.getElementById('view-azcostgov')?.classList.add('hidden');
     document.getElementById('view-hub').classList.remove('hidden');
     // Refresh org/user info in hub header
     const hubOrg = document.getElementById('hub-org-name');

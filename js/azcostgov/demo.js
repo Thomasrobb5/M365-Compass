@@ -1,0 +1,46 @@
+/**
+ * demo.js - Sample data for Azure Costs
+ */
+
+async function azLoadDemoData() {
+    console.log("Loading Azure Cost demo data...");
+
+    AZG.isDemoMode = true;
+    AZG.data.currency = 'USD';
+
+    // Historical Monthly Trends (last 6 months)
+    AZG.data.history = [
+        { month: 'Sep 2025', cost: 1450.00 },
+        { month: 'Oct 2025', cost: 1520.50 },
+        { month: 'Nov 2025', cost: 1680.75 },
+        { month: 'Dec 2025', cost: 1850.20 },
+        { month: 'Jan 2026', cost: 1720.40 },
+        { month: 'Feb 2026', cost: 1820.65 }
+    ];
+
+    AZG.data.subscriptions = [
+        { id: 'sub-1', name: 'Production Subscription', cost: 1250.45, status: 'Active' },
+        { id: 'sub-2', name: 'Development Subscription', cost: 450.20, status: 'Active' },
+        { id: 'sub-3', name: 'QA Subscription', cost: 120.00, status: 'Disabled' }
+    ];
+
+    AZG.data.resourceGroups = [
+        { name: 'rg-prod-web', subscription: 'Production Subscription', cost: 600.00, location: 'East US', service: 'Compute', tags: { 'Environment': 'Prod', 'Project': 'Website' } },
+        { name: 'rg-prod-db', subscription: 'Production Subscription', cost: 450.45, location: 'East US', service: 'Databases', tags: { 'Environment': 'Prod', 'Project': 'Data' } },
+        { name: 'rg-shared-svc', subscription: 'Production Subscription', cost: 200.00, location: 'West Europe', service: 'Networking', tags: { 'Environment': 'Shared', 'Project': 'Infrastructure' } },
+        { name: 'rg-dev-sandbox', subscription: 'Development Subscription', cost: 450.20, location: 'North Central US', service: 'Compute', tags: { 'Environment': 'Dev', 'Project': 'Testing' } },
+        { name: 'rg-qa-testing', subscription: 'QA Subscription', cost: 120.00, location: 'East US', service: 'Storage', tags: { 'Environment': 'QA', 'Project': 'Testing' } }
+    ];
+
+    // Service Type Breakdown
+    AZG.data.services = [
+        { name: 'Compute', cost: 1050.20 },
+        { name: 'Databases', cost: 450.45 },
+        { name: 'Storage', cost: 120.00 },
+        { name: 'Networking', cost: 200.00 }
+    ];
+
+    AZG.data.totalCost = AZG.data.subscriptions.reduce((sum, sub) => sum + sub.cost, 0);
+
+    if (typeof azInitUI === 'function') azInitUI();
+}

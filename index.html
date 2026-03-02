@@ -1318,6 +1318,44 @@
                     </div>
                 </div>
 
+                <!-- Azure Costs -->
+                <div onclick="launchAzureCosts()"
+                    class="group bg-surface-900 border border-surface-700 rounded-2xl overflow-hidden cursor-pointer hover:border-blue-400/50 transition-all duration-200 hover:shadow-lg hover:shadow-blue-900/40 flex flex-col col-span-1 relative">
+                    <div class="h-20 flex items-center justify-center relative overflow-hidden"
+                        style="background: linear-gradient(145deg, #1e3a8a 0%, #1e1b4b 100%);">
+                        <div class="absolute inset-0 opacity-10"
+                            style="background-image: radial-gradient(circle, #3b82f6 1px, transparent 1px); background-size: 20px 20px;">
+                        </div>
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center relative z-10"
+                            style="background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.3);">
+                            <i data-lucide="banknote" class="w-6 h-6 text-blue-300"></i>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col gap-2 flex-1">
+                        <div>
+                            <h3 class="text-base font-bold text-white leading-tight">Azure Costs</h3>
+                            <p class="text-[10px] text-blue-400 font-medium mt-0.5 uppercase tracking-wider">Cloud Spend
+                            </p>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed flex-1 line-clamp-3">Get a clear overview of
+                            costs for your Azure environment, per subscription and resource group.</p>
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <span
+                                class="text-[10px] bg-blue-950/60 text-blue-300 border border-blue-900/60 px-1.5 py-0.5 rounded">Subscriptions</span>
+                            <span
+                                class="text-[10px] bg-blue-950/60 text-blue-300 border border-blue-900/60 px-1.5 py-0.5 rounded">Resource
+                                Groups</span>
+                        </div>
+                        <button
+                            class="w-full mt-auto py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200"
+                            style="background: rgba(59,130,246,0.25); border: 1px solid rgba(59,130,246,0.35);"
+                            onmouseover="this.style.background='rgba(59,130,246,0.4)'"
+                            onmouseout="this.style.background='rgba(59,130,246,0.25)'">
+                            Open Module →
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Bento Info Widget - Cell 8 -->
                 <div
                     class="bg-surface-800/50 border border-surface-700/50 border-dashed rounded-2xl flex flex-col col-span-1 min-h-[220px] p-5 justify-between relative overflow-hidden">
@@ -1327,7 +1365,7 @@
                     <div>
                         <h3 class="text-sm font-bold text-white mb-1"><i data-lucide="zap"
                                 class="w-4 h-4 inline-block text-emerald-400 mb-0.5 mr-1"></i>Platform Status</h3>
-                        <p class="text-xs text-slate-400">All 7 modules operational.</p>
+                        <p class="text-xs text-slate-400">All 8 modules operational.</p>
                     </div>
                     <div class="space-y-3 relative z-10">
                         <div class="flex items-center justify-between text-xs">
@@ -2644,6 +2682,84 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW: Azure Costs Governance                                       -->
+    <div id="view-azcostgov" class="hidden">
+        <div id="azcostgov-app" class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <aside id="azcostgov-sidebar"
+                class="sidebar w-64 shrink-0 flex flex-col bg-surface-900 border-r border-surface-800 z-50">
+                <div class="px-5 py-5 flex items-center gap-3 border-b border-surface-800 text-white">
+                    <img src="/android-chrome-192x192.png" alt="M365 Compass"
+                        class="w-9 h-9 rounded-lg object-cover shrink-0 text-white">
+                    <div>
+                        <span class="text-white font-bold text-base leading-none block">Azure costs</span>
+                        <span class="text-slate-500 text-xs">Cloud Spend</span>
+                    </div>
+                </div>
+                <button onclick="backToHub()"
+                    class="mx-3 mt-3 flex items-center gap-2 text-xs text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-surface-800 transition">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Hub
+                </button>
+                <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                    <button class="nav-item active" data-page="azcostgov-overview"
+                        onclick="azNavigateTo('azcostgov-overview')">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 shrink-0"></i><span>Overview</span>
+                    </button>
+                    <button class="nav-item" data-page="azcostgov-subscriptions"
+                        onclick="azNavigateTo('azcostgov-subscriptions')">
+                        <i data-lucide="layers" class="w-4 h-4 shrink-0"></i><span>Subscriptions</span>
+                    </button>
+                    <button class="nav-item" data-page="azcostgov-resourcegroups"
+                        onclick="azNavigateTo('azcostgov-resourcegroups')">
+                        <i data-lucide="box" class="w-4 h-4 shrink-0"></i><span>Resource Groups</span>
+                    </button>
+                </nav>
+                <div class="px-3 pb-4 space-y-2 border-t border-surface-800 pt-3">
+                    <button id="azcostgov-refresh-btn" class="nav-item" onclick="azRefreshData()">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 shrink-0"></i><span>Refresh Data</span>
+                    </button>
+                    <div class="flex items-center justify-between px-3 py-1">
+                        <span class="text-xs text-slate-500">Dark Mode</span>
+                        <button id="azcostgov-theme-toggle"
+                            class="w-10 h-5 rounded-full bg-brand-600 relative transition-colors"
+                            aria-label="Toggle theme"
+                            onclick="setTheme(!document.documentElement.classList.contains('dark'))">
+                            <span
+                                class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-6 py-4 mt-auto border-t border-surface-800">
+                    <p class="text-xs font-bold text-white">Thomas Robb</p>
+                    <p class="text-[10px] text-slate-500">Solutions Engineer</p>
+                    <p class="text-[10px] text-slate-600 mt-2">© 2026 M365 Compass</p>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <header
+                    class="bg-surface-900/80 backdrop-blur-sm border-b border-surface-800 px-6 py-4 flex items-center gap-4 shrink-0">
+                    <div class="flex-1">
+                        <h1 id="azcostgov-page-title" class="text-lg font-bold text-white">Azure Cost Overview</h1>
+                        <p id="azcostgov-page-subtitle" class="text-xs text-slate-400">Total spending across all
+                            subscriptions</p>
+                    </div>
+                </header>
+
+                <!-- Filter Bar -->
+                <div id="azcostgov-filter-bar"
+                    class="bg-surface-850/50 border-b border-surface-800 px-6 py-3 flex items-center gap-4 shrink-0 transition-all duration-300">
+                    <!-- Filters will be injected here -->
+                </div>
+
+                <main id="azcostgov-pages-container" class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <!-- Page content will be injected here -->
+                </main>
+            </div>
+        </div>
+    </div>
+
     <!-- VIEW: SOC2 Governance                                             -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <div id="view-soc2gov" class="hidden fixed inset-0 flex h-screen overflow-hidden text-white bg-surface-950">
@@ -2982,6 +3098,13 @@
     <script src="js/soc2gov/ui.js"></script>
     <script src="js/soc2gov/pages/overview.js"></script>
     <script src="js/soc2gov/pages/reports.js"></script>
+
+    <script src="js/azcostgov/graph.js"></script>
+    <script src="js/azcostgov/demo.js"></script>
+    <script src="js/azcostgov/ui.js"></script>
+    <script src="js/azcostgov/pages/overview.js"></script>
+    <script src="js/azcostgov/pages/subscriptions.js"></script>
+    <script src="js/azcostgov/pages/resourcegroups.js"></script>
 
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>

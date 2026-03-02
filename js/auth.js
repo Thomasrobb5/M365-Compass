@@ -83,6 +83,31 @@ async function trySilentLogin() {
     } catch (e) { return false; }
 }
 
+/**
+ * Acquire a token for Azure Resource Manager (ARM)
+ */
+async function getArmToken() {
+    const accounts = LG.msalInstance.getAllAccounts();
+    if (!accounts || accounts.length === 0) throw new Error("No active account found. Please sign in.");
+
+    try {
+        const result = await LG.msalInstance.acquireTokenSilent({
+            scopes: ['https://management.azure.com/.default'],
+            account: accounts[0]
+        });
+        return result.accessToken;
+    } catch (e) {
+        // Fallback to popup/redirect if silent fails
+        console.warn("Silent ARM token acquisition failed, requesting via popup/redirect", e);
+        const result = await LG.msalInstance.acquireTokenPopup({
+            scopes: ['https://management.azure.com/.default'],
+            account: accounts[0]
+        });
+        return result.accessToken;
+    }
+}
+window.getArmToken = getArmToken;
+
 // ── Redirect login ────────────────────────────────────────────────────────
 async function doLogin() {
     try {
@@ -381,11 +406,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (demoMode) {
             LG.isDemoMode = true;
             AG.isDemoMode = true;
+            if (typeof AZG !== 'undefined') AZG.isDemoMode = true;
             closeConfigModal();
             showHub();
             showToast('Demo mode activated — choose a product to explore', 'info');
         } else {
             LG.isDemoMode = false;
+            if (typeof AZG !== 'undefined') AZG.isDemoMode = false;
             try {
                 await initMsal(tenantId, clientId, redirectUri);
                 showToast('Redirecting to Microsoft login...', 'info');
