@@ -2713,6 +2713,13 @@
                         onclick="azNavigateTo('azcostgov-resourcegroups')">
                         <i data-lucide="box" class="w-4 h-4 shrink-0"></i><span>Resource Groups</span>
                     </button>
+                    <button class="nav-item" data-page="azcostgov-tags" onclick="azNavigateTo('azcostgov-tags')">
+                        <i data-lucide="tag" class="w-4 h-4 shrink-0"></i><span>Costs by Tag</span>
+                    </button>
+                    <button class="nav-item" data-page="azcostgov-untagged"
+                        onclick="azNavigateTo('azcostgov-untagged')">
+                        <i data-lucide="tag-off" class="w-4 h-4 shrink-0"></i><span>Untagged Resources</span>
+                    </button>
                 </nav>
                 <div class="px-3 pb-4 space-y-2 border-t border-surface-800 pt-3">
                     <button id="azcostgov-refresh-btn" class="nav-item" onclick="azRefreshData()">
@@ -3123,6 +3130,8 @@
     <script src="js/azcostgov/pages/overview.js"></script>
     <script src="js/azcostgov/pages/subscriptions.js"></script>
     <script src="js/azcostgov/pages/resourcegroups.js"></script>
+    <script src="js/azcostgov/pages/tags.js"></script>
+    <script src="js/azcostgov/pages/untagged.js"></script>
 
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>

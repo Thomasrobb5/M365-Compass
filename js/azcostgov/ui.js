@@ -11,7 +11,9 @@ let azFilters = {
 const AZ_PAGE_META = {
     'azcostgov-overview': { title: 'Azure Cost Overview', subtitle: 'Spending across all subscriptions' },
     'azcostgov-subscriptions': { title: 'Subscriptions', subtitle: 'Costs broken down by subscription' },
-    'azcostgov-resourcegroups': { title: 'Resource Groups', subtitle: 'Costs broken down by resource group' }
+    'azcostgov-resourcegroups': { title: 'Resource Groups', subtitle: 'Costs broken down by resource group' },
+    'azcostgov-tags': { title: 'Costs by Tag', subtitle: 'Aggregation by Azure resource tags' },
+    'azcostgov-untagged': { title: 'Untagged Resources', subtitle: 'Resource groups without any tags' }
 };
 
 /**
@@ -164,6 +166,10 @@ function azRenderPage(page) {
         if (typeof azRenderSubscriptionsPage === 'function') azRenderSubscriptionsPage();
     } else if (page === 'azcostgov-resourcegroups') {
         if (typeof azRenderResourceGroupsPage === 'function') azRenderResourceGroupsPage();
+    } else if (page === 'azcostgov-tags') {
+        if (typeof azRenderTagsPage === 'function') azRenderTagsPage();
+    } else if (page === 'azcostgov-untagged') {
+        if (typeof azRenderUntaggedPage === 'function') azRenderUntaggedPage();
     } else {
         container.innerHTML = `<div class="p-12 text-center text-slate-500">Coming Soon... (${page})</div>`;
     }

@@ -29,7 +29,8 @@ async function azLoadDemoData() {
         { name: 'rg-prod-db', subscription: 'Production Subscription', cost: 450.45, location: 'East US', service: 'Databases', tags: { 'Environment': 'Prod', 'Project': 'Data' } },
         { name: 'rg-shared-svc', subscription: 'Production Subscription', cost: 200.00, location: 'West Europe', service: 'Networking', tags: { 'Environment': 'Shared', 'Project': 'Infrastructure' } },
         { name: 'rg-dev-sandbox', subscription: 'Development Subscription', cost: 450.20, location: 'North Central US', service: 'Compute', tags: { 'Environment': 'Dev', 'Project': 'Testing' } },
-        { name: 'rg-qa-testing', subscription: 'QA Subscription', cost: 120.00, location: 'East US', service: 'Storage', tags: { 'Environment': 'QA', 'Project': 'Testing' } }
+        { name: 'rg-qa-testing', subscription: 'QA Subscription', cost: 120.00, location: 'East US', service: 'Storage', tags: { 'Environment': 'QA', 'Project': 'Testing' } },
+        { name: 'rg-untagged-zombie', subscription: 'Production Subscription', cost: 75.50, location: 'East US', service: 'Other', tags: {} }
     ];
 
     // Service Type Breakdown

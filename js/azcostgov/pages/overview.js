@@ -198,9 +198,11 @@ function azRenderOverviewPage() {
 /**
  * Initialize Chart.js spending charts
  */
+let azTrendChart = null;
+let azServiceChart = null;
+
 function renderAzCharts(filteredData) {
     const data = filteredData || AZG.data;
-    if (!data.history || !data.history.length) return;
 
     // Service Distribution calculation based on filtered RGs
     const serviceDistribution = {};
@@ -212,16 +214,22 @@ function renderAzCharts(filteredData) {
     const serviceLabels = Object.keys(serviceDistribution);
     const serviceCosts = Object.values(serviceDistribution);
 
+    // Get the global history for the trend chart (as trend is usually across all)
+    // or use filtered data history if we want to be subscription-specific
+    const historyData = AZG.data.history || [];
+    if (!historyData.length) return;
+
     // Spending Trend Chart
     const trendCtx = document.getElementById('az-chart-trend');
     if (trendCtx) {
-        new Chart(trendCtx, {
+        if (azTrendChart) azTrendChart.destroy();
+        azTrendChart = new Chart(trendCtx, {
             type: 'line',
             data: {
-                labels: (AZG.data.history || []).map(h => h.month),
+                labels: historyData.map(h => h.month),
                 datasets: [{
                     label: 'Monthly Cost',
-                    data: (AZG.data.history || []).map(h => h.cost),
+                    data: historyData.map(h => h.cost),
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     fill: true,
@@ -273,13 +281,18 @@ function renderAzCharts(filteredData) {
     // Service Distribution Chart
     const serviceCtx = document.getElementById('az-chart-services');
     if (serviceCtx) {
-        new Chart(serviceCtx, {
+        if (azServiceChart) azServiceChart.destroy();
+        azServiceChart = new Chart(serviceCtx, {
             type: 'doughnut',
             data: {
                 labels: serviceLabels,
                 datasets: [{
                     data: serviceCosts,
-                    backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981'],
+                    backgroundColor: [
+                        '#3b82f6', '#8b5cf6', '#f59e0b', '#10b981',
+                        '#ef4444', '#06b6d4', '#ec4899', '#6366f1',
+                        '#f97316', '#22c55e', '#a855f7', '#14b8a6'
+                    ],
                     borderWidth: 0,
                     hoverOffset: 10
                 }]
