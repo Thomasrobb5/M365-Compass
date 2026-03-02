@@ -36,7 +36,22 @@ function azRenderOverviewPage() {
         });
         tableRows = Object.values(tagMap).sort((a, b) => b.cost - a.cost);
     } else {
-        tableRows = data.resourceGroups.sort((a, b) => b.cost - a.cost);
+        // Aggregate resources back to RGs for this specific table
+        const rgMap = {};
+        data.resourceGroups.forEach(res => {
+            const key = res.rgName || res.name;
+            if (!rgMap[key]) {
+                rgMap[key] = {
+                    name: key,
+                    cost: 0,
+                    location: res.location,
+                    service: res.service,
+                    subscription: res.subscription
+                };
+            }
+            rgMap[key].cost += res.cost;
+        });
+        tableRows = Object.values(rgMap).sort((a, b) => b.cost - a.cost);
     }
 
     container.innerHTML = `

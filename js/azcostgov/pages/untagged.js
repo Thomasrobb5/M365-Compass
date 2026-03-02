@@ -67,18 +67,18 @@ function azRenderUntaggedPage() {
             <table class="w-full text-left text-sm">
                 <thead class="bg-surface-950 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
+                        <th class="px-6 py-3">Resource Name</th>
                         <th class="px-6 py-3">Resource Group</th>
                         <th class="px-6 py-3">Subscription</th>
-                        <th class="px-6 py-3 text-right">Location</th>
                         <th class="px-6 py-3 text-right">Cost</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-800">
                     ${sortedUntagged.map(rg => `
                         <tr class="hover:bg-surface-850 transition-colors">
-                            <td class="px-6 py-4 font-bold text-white">${rg.name}</td>
+                            <td class="px-6 py-4 font-bold text-white truncate max-w-[200px]" title="${rg.name}">${rg.name}</td>
+                            <td class="px-6 py-4 text-slate-400 text-xs">${rg.rgName || 'N/A'}</td>
                             <td class="px-6 py-4 text-slate-400 text-xs">${rg.subscription}</td>
-                            <td class="px-6 py-4 text-right text-slate-500 text-xs">${rg.location}</td>
                             <td class="px-6 py-4 text-right font-mono text-amber-400 font-bold">
                                 ${new Intl.NumberFormat('en-US', { style: 'currency', currency: data.currency }).format(rg.cost)}
                             </td>

@@ -49,21 +49,37 @@ function azRenderResourceGroupsPage() {
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-800">
-                    ${data.resourceGroups.sort((a, b) => b.cost - a.cost).map(rg => `
-                        <tr class="hover:bg-surface-850 transition-colors">
-                            <td class="px-6 py-4 font-bold text-white">${rg.name}</td>
-                            <td class="px-6 py-4 text-slate-400 text-xs">${rg.subscription}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 py-0.5 bg-surface-800 border border-surface-700 rounded text-[10px] text-slate-300">
-                                    ${rg.service}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-slate-500 text-xs">${rg.location}</td>
-                            <td class="px-6 py-4 text-right font-mono text-amber-400 font-bold">
-                                ${new Intl.NumberFormat('en-US', { style: 'currency', currency: data.currency }).format(rg.cost)}
-                            </td>
-                        </tr>
-                    `).join('')}
+                    ${(() => {
+            const rgMap = {};
+            data.resourceGroups.forEach(res => {
+                const key = res.rgName || res.name;
+                if (!rgMap[key]) {
+                    rgMap[key] = {
+                        name: key,
+                        subscription: res.subscription,
+                        service: res.service,
+                        location: res.location,
+                        cost: 0
+                    };
+                }
+                rgMap[key].cost += res.cost;
+            });
+            return Object.values(rgMap).sort((a, b) => b.cost - a.cost).map(rg => `
+                            <tr class="hover:bg-surface-850 transition-colors">
+                                <td class="px-6 py-4 font-bold text-white">${rg.name}</td>
+                                <td class="px-6 py-4 text-slate-400 text-xs">${rg.subscription}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-0.5 bg-surface-800 border border-surface-700 rounded text-[10px] text-slate-300">
+                                        ${rg.service}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-500 text-xs">${rg.location}</td>
+                                <td class="px-6 py-4 text-right font-mono text-amber-400 font-bold">
+                                    ${new Intl.NumberFormat('en-US', { style: 'currency', currency: data.currency }).format(rg.cost)}
+                                </td>
+                            </tr>
+                        `).join('');
+        })()}
                 </tbody>
             </table>
         </div>

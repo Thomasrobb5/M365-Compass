@@ -25,12 +25,14 @@ async function azLoadDemoData() {
     ];
 
     AZG.data.resourceGroups = [
-        { name: 'rg-prod-web', subscription: 'Production Subscription', cost: 600.00, location: 'East US', service: 'Compute', tags: { 'Environment': 'Prod', 'Project': 'Website' } },
-        { name: 'rg-prod-db', subscription: 'Production Subscription', cost: 450.45, location: 'East US', service: 'Databases', tags: { 'Environment': 'Prod', 'Project': 'Data' } },
-        { name: 'rg-shared-svc', subscription: 'Production Subscription', cost: 200.00, location: 'West Europe', service: 'Networking', tags: { 'Environment': 'Shared', 'Project': 'Infrastructure' } },
-        { name: 'rg-dev-sandbox', subscription: 'Development Subscription', cost: 450.20, location: 'North Central US', service: 'Compute', tags: { 'Environment': 'Dev', 'Project': 'Testing' } },
-        { name: 'rg-qa-testing', subscription: 'QA Subscription', cost: 120.00, location: 'East US', service: 'Storage', tags: { 'Environment': 'QA', 'Project': 'Testing' } },
-        { name: 'rg-untagged-zombie', subscription: 'Production Subscription', cost: 75.50, location: 'East US', service: 'Other', tags: {} }
+        { name: 'vm-prod-web-01', rgName: 'rg-prod-web', subscription: 'Production Subscription', cost: 400.00, location: 'East US', service: 'Compute', tags: { 'Environment': 'Prod', 'Project': 'Website' } },
+        { name: 'vm-prod-web-02', rgName: 'rg-prod-web', subscription: 'Production Subscription', cost: 200.00, location: 'East US', service: 'Compute', tags: { 'Environment': 'Prod', 'Project': 'Website' } },
+        { name: 'sql-prod-db', rgName: 'rg-prod-db', subscription: 'Production Subscription', cost: 450.45, location: 'East US', service: 'Databases', tags: { 'Environment': 'Prod', 'Project': 'Data' } },
+        { name: 'vnet-shared', rgName: 'rg-shared-svc', subscription: 'Production Subscription', cost: 200.00, location: 'West Europe', service: 'Networking', tags: { 'Environment': 'Shared', 'Project': 'Infrastructure' } },
+        { name: 'vm-dev-sandbox', rgName: 'rg-dev-sandbox', subscription: 'Development Subscription', cost: 450.20, location: 'North Central US', service: 'Compute', tags: { 'Environment': 'Dev', 'Project': 'Testing' } },
+        { name: 'st-qa-logs', rgName: 'rg-qa-testing', subscription: 'QA Subscription', cost: 120.00, location: 'East US', service: 'Storage', tags: { 'Environment': 'QA', 'Project': 'Testing' } },
+        { name: 'disk-zombie-01', rgName: 'rg-untagged-zombie', subscription: 'Production Subscription', cost: 50.50, location: 'East US', service: 'Other', tags: {} },
+        { name: 'disk-zombie-02', rgName: 'rg-untagged-zombie', subscription: 'Production Subscription', cost: 25.00, location: 'East US', service: 'Other', tags: {} }
     ];
 
     // Service Type Breakdown

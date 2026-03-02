@@ -108,6 +108,7 @@ async function azLoadGraphData() {
                     "granularity": "None",
                     "aggregation": { "totalCost": { "name": "Cost", "function": "Sum" } },
                     "grouping": [
+                        { "type": "Dimension", "name": "ResourceId" },
                         { "type": "Dimension", "name": "ResourceGroupName" },
                         { "type": "Dimension", "name": "ServiceName" }
                     ]
@@ -127,8 +128,9 @@ async function azLoadGraphData() {
                 if (costData.properties && costData.properties.rows) {
                     costData.properties.rows.forEach(row => {
                         const cost = parseFloat(row[0]);
-                        const rgName = row[1];
-                        const serviceName = row[2];
+                        const resourceId = row[1];
+                        const rgName = row[2];
+                        const serviceName = row[3];
                         subTotal += cost;
 
                         // Service breakdown
@@ -137,9 +139,16 @@ async function azLoadGraphData() {
                         }
 
                         if (rgName) {
+                            // Extract actual resource name from ID
+                            let resourceName = rgName; // Fallback
+                            if (resourceId && resourceId.includes('/')) {
+                                resourceName = resourceId.split('/').pop();
+                            }
+
                             const meta = rgMetaMap[rgName] || { tags: {}, location: 'Unknown' };
                             resourceGroups.push({
-                                name: rgName,
+                                name: resourceName, // Using resource name now
+                                rgName: rgName,    // Keeping RG name for reference
                                 subscription: subName,
                                 cost: cost,
                                 location: meta.location,
