@@ -12,6 +12,7 @@ const AZ_PAGE_META = {
     'azcostgov-overview': { title: 'Azure Cost Overview', subtitle: 'Spending across all subscriptions' },
     'azcostgov-subscriptions': { title: 'Subscriptions', subtitle: 'Costs broken down by subscription' },
     'azcostgov-resourcegroups': { title: 'Resource Groups', subtitle: 'Costs broken down by resource group' },
+    'azcostgov-explorer': { title: 'Resource Explorer', subtitle: 'Hierarchical view of all Azure assets' },
     'azcostgov-tags': { title: 'Costs by Tag', subtitle: 'Aggregation by Azure resource tags' },
     'azcostgov-untagged': { title: 'Untagged Resources', subtitle: 'Resource groups without any tags' }
 };
@@ -166,6 +167,8 @@ function azRenderPage(page) {
         if (typeof azRenderSubscriptionsPage === 'function') azRenderSubscriptionsPage();
     } else if (page === 'azcostgov-resourcegroups') {
         if (typeof azRenderResourceGroupsPage === 'function') azRenderResourceGroupsPage();
+    } else if (page === 'azcostgov-explorer') {
+        if (typeof azRenderExplorerPage === 'function') azRenderExplorerPage();
     } else if (page === 'azcostgov-tags') {
         if (typeof azRenderTagsPage === 'function') azRenderTagsPage();
     } else if (page === 'azcostgov-untagged') {
