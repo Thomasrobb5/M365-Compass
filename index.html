@@ -2753,6 +2753,24 @@
                     <!-- Filters will be injected here -->
                 </div>
 
+                <!-- Loading Overlay -->
+                <div id="azcostgov-loading-overlay" class="flex-1 flex items-center justify-center hidden">
+                    <div class="w-full max-w-sm px-6 text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="cloud-lightning" class="w-8 h-8 text-blue-400 animate-pulse"></i>
+                        </div>
+                        <p class="text-white font-semibold text-base mb-1" id="azcostgov-loading-text">Scanning Azure
+                            Subscriptions...</p>
+                        <p class="text-slate-500 text-xs mb-5" id="azcostgov-loading-sub-text">Connecting to ARM API</p>
+                        <div class="bg-surface-800 rounded-full h-2 overflow-hidden mb-3">
+                            <div id="azcostgov-loading-progress-bar"
+                                class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500 ease-out"
+                                style="width: 0%"></div>
+                        </div>
+                        <p class="text-slate-500 text-xs" id="azcostgov-loading-progress-pct">0%</p>
+                    </div>
+                </div>
+
                 <main id="azcostgov-pages-container" class="flex-1 overflow-y-auto p-6 space-y-6">
                     <!-- Page content will be injected here -->
                 </main>

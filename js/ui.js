@@ -533,8 +533,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
-            if (LG.data.users.length > 0 || LG.isDemoMode || (page === 'overview')) {
-                navigateTo(page);
+            // Allow Azure Cost pages or if M365 data is present/demo mode
+            const isAzurePage = page.startsWith('azcostgov-');
+            if (isAzurePage || LG.data.users.length > 0 || LG.isDemoMode || (page === 'overview')) {
+                if (isAzurePage) {
+                    if (typeof azNavigateTo === 'function') azNavigateTo(page);
+                } else {
+                    navigateTo(page);
+                }
             } else {
                 showToast('Please connect to Microsoft 365 first', 'warning');
             }

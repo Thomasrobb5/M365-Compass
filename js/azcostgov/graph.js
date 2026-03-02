@@ -24,7 +24,27 @@ async function azLoadGraphData() {
         return azLoadDemoData();
     }
 
+    const overlay = document.getElementById('azcostgov-loading-overlay');
+    const pages = document.getElementById('azcostgov-pages-container');
+    const filterBar = document.getElementById('azcostgov-filter-bar');
+
+    const updateProgress = (pct, text, subText) => {
+        const bar = document.getElementById('azcostgov-loading-progress-bar');
+        const pctEl = document.getElementById('azcostgov-loading-progress-pct');
+        const textEl = document.getElementById('azcostgov-loading-text');
+        const subTextEl = document.getElementById('azcostgov-loading-sub-text');
+        if (bar) bar.style.width = `${pct}%`;
+        if (pctEl) pctEl.textContent = `${Math.round(pct)}%`;
+        if (textEl && text) textEl.textContent = text;
+        if (subTextEl && subText) subTextEl.textContent = subText;
+    };
+
     try {
+        if (overlay) overlay.classList.remove('hidden');
+        if (pages) pages.classList.add('hidden');
+        if (filterBar) filterBar.classList.add('hidden');
+
+        updateProgress(5, "Authentication", "Acquiring ARM Token...");
         const token = await getArmToken();
         const headers = {
             'Authorization': `Bearer ${token}`,
@@ -32,6 +52,7 @@ async function azLoadGraphData() {
         };
 
         // 1. Fetch Subscriptions
+        updateProgress(10, "Scanning Resources", "Fetching subscriptions...");
         const subRes = await fetch('https://management.azure.com/subscriptions?api-version=2020-01-01', { headers });
         const subData = await subRes.json();
 
@@ -46,12 +67,35 @@ async function azLoadGraphData() {
         let totalMonthlySpend = 0;
 
         // 2. Fetch Costs per Subscription
-        // Note: For large tenants, this should be parallelized or limited
-        for (const sub of subData.value) {
+        const totalSubs = subData.value.length;
+        for (let i = 0; i < totalSubs; i++) {
+            const sub = subData.value[i];
             const subId = sub.subscriptionId;
             const subName = sub.displayName;
+            const subProgress = 10 + ((i / totalSubs) * 80);
 
-            // --- A. Current Month breakdown (by RG and Service) ---
+            updateProgress(subProgress, `Scanning ${subName}`, `Fetching costs and metadata...`);
+
+            // --- A. Fetch Resource Group Metadata (for Tags & Location) ---
+            const rgMetaMap = {};
+            try {
+                const rgMetaRes = await fetch(`https://management.azure.com/subscriptions/${subId}/resourcegroups?api-version=2021-04-01`, { headers });
+                if (rgMetaRes.ok) {
+                    const rgMetaData = await rgMetaRes.json();
+                    if (rgMetaData.value) {
+                        rgMetaData.value.forEach(rg => {
+                            rgMetaMap[rg.name] = {
+                                tags: rg.tags || {},
+                                location: rg.location
+                            };
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn(`Failed to fetch RG metadata for sub ${subName}:`, e);
+            }
+
+            // --- B. Current Month breakdown (by RG and Service) ---
             const now = new Date();
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
             const endOfMonth = now.toISOString();
@@ -93,13 +137,14 @@ async function azLoadGraphData() {
                         }
 
                         if (rgName) {
+                            const meta = rgMetaMap[rgName] || { tags: {}, location: 'Unknown' };
                             resourceGroups.push({
                                 name: rgName,
                                 subscription: subName,
                                 cost: cost,
-                                location: 'Auto',
+                                location: meta.location,
                                 service: serviceName || 'Other',
-                                tags: {}
+                                tags: meta.tags
                             });
                         }
                     });
@@ -111,7 +156,7 @@ async function azLoadGraphData() {
                 subscriptions.push({ id: subId, name: subName, cost: 0, status: 'Error' });
             }
 
-            // --- B. Historical Trend (Last 6 Months) ---
+            // --- C. Historical Trend (Last 6 Months) ---
             const sixMonthsAgo = new Date();
             sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
             sixMonthsAgo.setDate(1);
@@ -150,6 +195,8 @@ async function azLoadGraphData() {
             }
         }
 
+        updateProgress(95, "Finalizing", "Aggregating results...");
+
         // 3. Update Global Data
         AZG.data.subscriptions = subscriptions;
         AZG.data.resourceGroups = resourceGroups;
@@ -167,10 +214,23 @@ async function azLoadGraphData() {
             .sort((a, b) => b.cost - a.cost);
 
         await azSaveCache();
+
+        updateProgress(100, "Scan Complete", "Rendering dashboard...");
+
+        // Hide overlay and show content
+        if (overlay) overlay.classList.add('hidden');
+        if (pages) pages.classList.remove('hidden');
+        // Filter bar should only show on overview
+        if (typeof azCurrentPage !== 'undefined' && azCurrentPage === 'azcostgov-overview' && filterBar) {
+            filterBar.classList.remove('hidden');
+        }
+
         if (typeof azInitUI === 'function') azInitUI();
         return true;
     } catch (e) {
         console.error("Live Azure Cost fetch failed", e);
+        if (overlay) overlay.classList.add('hidden');
+        if (pages) pages.classList.remove('hidden');
         showToast(`Failed to load live data: ${e.message}. Falling back to demo.`, "error");
         return azLoadDemoData();
     }
